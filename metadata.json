@@ -1,0 +1,6 @@
+{
+  "name": "IITCUP - Gestor Pericial",
+  "description": "Sistema PWA de Gestión Integral de Requerimientos Periciales, Técnicos y Cadena de Custodia del IITCUP Regional Santa Cruz.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

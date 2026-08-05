@@ -1,0 +1,25 @@
+{
+  "short_name": "IITCUP PWA",
+  "name": "IITCUP - Gestor Pericial Regional Santa Cruz",
+  "description": "Sistema de Gestión Integral de Requerimientos Periciales, Técnicos y Cadena de Custodia del IITCUP Regional Santa Cruz.",
+  "icons": [
+    {
+      "src": "pwa-icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "pwa-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "theme_color": "#004d25",
+  "display": "standalone",
+  "orientation": "any",
+  "lang": "es-BO"
+}
