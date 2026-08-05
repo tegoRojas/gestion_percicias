@@ -600,6 +600,8 @@ CREATE TABLE IF NOT EXISTS public.requirements (
     origin VARCHAR(200) NOT NULL,
     external_code VARCHAR(100) NOT NULL,
     applicant_name VARCHAR(150) NOT NULL,
+    interested_person_name VARCHAR(150),
+    interested_person_phone VARCHAR(30),
     foja_count INT NOT NULL DEFAULT 1,
     service_type VARCHAR(20) CHECK (service_type IN ('PERICIAL', 'TECNICO', 'AMBOS')),
     section_id UUID REFERENCES public.sections(id),
@@ -627,6 +629,8 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_auto_rup ON public.requirements;
 
 CREATE TRIGGER trg_auto_rup
 BEFORE INSERT ON public.requirements
@@ -732,6 +736,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_protect_audit ON public.audit_logs;
+
 CREATE TRIGGER trg_protect_audit
 BEFORE DELETE OR UPDATE ON public.audit_logs
 FOR EACH ROW
@@ -741,6 +747,9 @@ EXECUTE FUNCTION prevent_audit_deletion();
 ALTER TABLE public.requirements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.evidences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lectura de requerimientos segun rol" ON public.requirements;
+DROP POLICY IF EXISTS "Permiso administradores" ON public.audit_logs;
 
 CREATE POLICY "Lectura de requerimientos segun rol" ON public.requirements
 FOR SELECT USING (true);
