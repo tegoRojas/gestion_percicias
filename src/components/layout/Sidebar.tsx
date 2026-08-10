@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { ROLE_ALLOWED_VIEWS } from '../../types';
 import {
   LayoutDashboard,
   FilePlus,
@@ -20,21 +21,22 @@ export const Sidebar: React.FC = () => {
   const { currentUser, activeView, setActiveView, unreadCount } = useApp();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['ADMIN', 'RECEPCION', 'SALA_EVIDENCIAS', 'ENCARGADO_SERVICIOS', 'PERITO', 'TECNICO'] },
-    { id: 'recepcion', label: 'Recepción RUP', icon: FilePlus, roles: ['ADMIN', 'RECEPCION', 'ENCARGADO_SERVICIOS', 'SALA_EVIDENCIAS'] },
-    { id: 'evidencias', label: 'Sala de Evidencias', icon: PackageCheck, roles: ['ADMIN', 'SALA_EVIDENCIAS', 'RECEPCION', 'PERITO', 'TECNICO'] },
-    { id: 'servicios', label: 'Servicios Periciales', icon: Briefcase, roles: ['ADMIN', 'ENCARGADO_SERVICIOS'] },
-    { id: 'mis_casos', label: 'Mis Casos Asignados', icon: FolderKanban, roles: ['PERITO', 'TECNICO', 'ADMIN'] },
-    { id: 'reportes', label: 'Reportes y Estadísticas', icon: FileSpreadsheet, roles: ['ADMIN', 'ENCARGADO_SERVICIOS', 'RECEPCION'] },
-    { id: 'usuarios', label: 'Gestión de Usuarios', icon: Users, roles: ['ADMIN'] },
-    { id: 'secciones', label: 'Secciones y Servicios', icon: Sliders, roles: ['ADMIN'] },
-    { id: 'oficinas', label: 'Oficinas Regionales', icon: Building2, roles: ['ADMIN'] },
-    { id: 'auditoria', label: 'Auditoría e Histórico', icon: ShieldAlert, roles: ['ADMIN'] },
-    { id: 'notificaciones', label: 'Notificaciones', icon: Bell, roles: ['ADMIN', 'RECEPCION', 'SALA_EVIDENCIAS', 'ENCARGADO_SERVICIOS', 'PERITO', 'TECNICO'], badge: unreadCount },
-    { id: 'configuracion', label: 'Configuración / SQL', icon: Settings, roles: ['ADMIN', 'RECEPCION', 'SALA_EVIDENCIAS', 'ENCARGADO_SERVICIOS', 'PERITO', 'TECNICO'] }
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'recepcion', label: 'Recepción RUP', icon: FilePlus },
+    { id: 'servicios', label: 'Servicios Periciales', icon: Briefcase },
+    { id: 'mis_casos', label: 'Mis Casos Asignados', icon: FolderKanban },
+    { id: 'evidencias', label: 'Sala de Evidencias', icon: PackageCheck },
+    { id: 'reportes', label: 'Reportes y Estadísticas', icon: FileSpreadsheet },
+    { id: 'usuarios', label: 'Gestión de Usuarios', icon: Users },
+    { id: 'secciones', label: 'Secciones y Servicios', icon: Sliders },
+    { id: 'oficinas', label: 'Oficinas Regionales', icon: Building2 },
+    { id: 'auditoria', label: 'Auditoría e Histórico', icon: ShieldAlert },
+    { id: 'notificaciones', label: 'Notificaciones', icon: Bell, badge: unreadCount },
+    { id: 'configuracion', label: 'Configuración / SQL', icon: Settings }
   ];
 
-  const allowedItems = navItems.filter(item => item.roles.includes(currentUser.role));
+  const userAllowedViews = ROLE_ALLOWED_VIEWS[currentUser.role] || ['dashboard'];
+  const allowedItems = navItems.filter(item => userAllowedViews.includes(item.id));
 
   return (
     <aside className="w-64 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col shrink-0 min-h-[calc(100vh-57px)] hidden md:flex">

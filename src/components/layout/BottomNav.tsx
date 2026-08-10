@@ -1,28 +1,31 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { ROLE_ALLOWED_VIEWS } from '../../types';
 import {
   LayoutDashboard,
   FilePlus,
   PackageCheck,
   Briefcase,
   FolderKanban,
-  Bell,
-  Menu
+  FileSpreadsheet,
+  Bell
 } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { currentUser, activeView, setActiveView, unreadCount } = useApp();
 
-  // Mobile key 5 navigation items
-  const items = [
+  const allItems = [
     { id: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
     { id: 'recepcion', label: 'RUP', icon: FilePlus },
+    { id: 'servicios', label: 'Servicios', icon: Briefcase },
+    { id: 'mis_casos', label: 'Mis Casos', icon: FolderKanban },
     { id: 'evidencias', label: 'Evidencias', icon: PackageCheck },
-    ...(currentUser.role === 'PERITO' || currentUser.role === 'TECNICO'
-      ? [{ id: 'mis_casos', label: 'Mis Casos', icon: FolderKanban }]
-      : [{ id: 'servicios', label: 'Servicios', icon: Briefcase }]),
+    { id: 'reportes', label: 'Reportes', icon: FileSpreadsheet },
     { id: 'notificaciones', label: 'Alertas', icon: Bell, badge: unreadCount }
   ];
+
+  const allowedViews = ROLE_ALLOWED_VIEWS[currentUser.role] || ['dashboard'];
+  const items = allItems.filter(item => allowedViews.includes(item.id)).slice(0, 5);
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950 text-slate-300 border-t border-slate-800 backdrop-blur-lg bg-opacity-95 px-2 py-1.5 flex items-center justify-around shadow-2xl">

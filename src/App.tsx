@@ -17,10 +17,42 @@ import { AuditoríaView } from './views/AuditoriaView';
 import { NotificacionesView } from './views/NotificacionesView';
 import { ConfiguracionView } from './views/ConfiguracionView';
 
+import { LoginView } from './views/LoginView';
+import { ROLE_ALLOWED_VIEWS } from './types';
+import { ShieldAlert } from 'lucide-react';
+
 const MainLayout: React.FC = () => {
-  const { activeView } = useApp();
+  const { activeView, setActiveView, currentUser, isAuthenticated } = useApp();
+
+  if (!isAuthenticated) {
+    return <LoginView />;
+  }
+
+  const allowedViews = ROLE_ALLOWED_VIEWS[currentUser.role] || ['dashboard'];
 
   const renderView = () => {
+    if (!allowedViews.includes(activeView)) {
+      return (
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-red-200 dark:border-red-900 shadow-lg text-center space-y-4 max-w-xl mx-auto my-12">
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-2xl flex items-center justify-center mx-auto border border-red-200 dark:border-red-800">
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">Acceso No Autorizado</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Su rol actual de <strong className="text-amber-600 dark:text-amber-400 font-bold">{currentUser.role}</strong> no tiene permisos asignados para ingresar al módulo de <strong className="capitalize">{activeView}</strong>.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveView(allowedViews[0] || 'dashboard')}
+            className="px-4 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            Ir a Mi Módulo Principal ({allowedViews[0].toUpperCase()})
+          </button>
+        </div>
+      );
+    }
+
     switch (activeView) {
       case 'dashboard':
         return <DashboardView />;

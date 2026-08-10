@@ -14,13 +14,15 @@ import {
   X,
   FileText,
   Download,
-  Database
+  Database,
+  LogOut
 } from 'lucide-react';
 
 export const Header: React.FC = () => {
   const {
     currentUser,
     switchRole,
+    logout,
     theme,
     toggleTheme,
     isOnline,
@@ -276,13 +278,21 @@ export const Header: React.FC = () => {
                   ))}
                 </div>
 
-                <div className="p-2.5 bg-slate-950 border-t border-slate-800 text-center">
+                <div className="p-2.5 bg-slate-950 border-t border-slate-800 flex flex-col gap-2 text-center">
                   <button
                     onClick={() => { setActiveView('configuracion'); setShowRoleMenu(false); }}
                     className="w-full text-[11px] text-emerald-400 hover:text-emerald-300 font-semibold flex items-center justify-center gap-1.5"
                   >
                     <Database className="w-3.5 h-3.5" />
                     Configurar Supabase / Exportar SQL
+                  </button>
+
+                  <button
+                    onClick={() => { setShowRoleMenu(false); logout(); }}
+                    className="w-full text-[11px] bg-red-950/60 hover:bg-red-900/80 text-red-300 py-1.5 rounded-lg border border-red-800/60 font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-red-400" />
+                    Cerrar Sesión del Sistema
                   </button>
                 </div>
               </div>

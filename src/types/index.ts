@@ -6,16 +6,52 @@ export type UserRole =
   | 'PERITO' 
   | 'TECNICO';
 
+export const ROLE_ALLOWED_VIEWS: Record<UserRole, string[]> = {
+  ADMIN: [
+    'dashboard', 'recepcion', 'evidencias', 'servicios', 'mis_casos',
+    'reportes', 'usuarios', 'secciones', 'oficinas', 'auditoria',
+    'notificaciones', 'configuracion'
+  ],
+  RECEPCION: [
+    'dashboard', 'recepcion', 'evidencias', 'notificaciones'
+  ],
+  ENCARGADO_SERVICIOS: [
+    'dashboard', 'servicios', 'mis_casos', 'evidencias', 'reportes', 'notificaciones'
+  ],
+  PERITO: [
+    'dashboard', 'mis_casos', 'evidencias', 'notificaciones'
+  ],
+  TECNICO: [
+    'dashboard', 'mis_casos', 'evidencias', 'notificaciones'
+  ],
+  SALA_EVIDENCIAS: [
+    'dashboard', 'evidencias', 'notificaciones'
+  ]
+};
+
 export interface User {
   id: string;
-  name: string;
-  username: string;
+  grado?: string;
+  paternalLastName?: string;
+  maternalLastName?: string;
+  firstName?: string;
+  secondName?: string;
+  ci?: string;
+  gender?: 'M' | 'F' | string;
   email: string;
+  escalafon?: string;
   role: UserRole;
   officeId: string;
   officeName: string;
+  cargo?: string;
   sectionId?: string;
   sectionName?: string;
+  sectionIds?: string[];
+  sectionNames?: string[];
+  technicalAreas?: string[];
+  name: string;
+  username: string;
+  password?: string;
   phone: string;
   badgeNumber?: string;
   active: boolean;

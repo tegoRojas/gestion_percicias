@@ -54,13 +54,35 @@ const DEFAULT_SECTIONS: Section[] = [
 const DEFAULT_SERVICES: ServiceItem[] = INITIAL_FORENSIC_SERVICES;
 
 const DEFAULT_USERS: User[] = [
-  { id: 'usr-admin', name: 'Cnel. Msc. Roberto Dávila', username: 'admin', email: 'admin.iitcup@policia.bo', role: 'ADMIN', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', phone: '77312345', badgeNumber: 'IIT-001', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-rec', name: 'Sgt. Ana María Rojas', username: 'recepcion', email: 'recepcion.scz@iitcup.bo', role: 'RECEPCION', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', phone: '77323456', badgeNumber: 'IIT-012', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-sala', name: 'Sof. Juan Pablo Mamani', username: 'custodia', email: 'custodia.scz@iitcup.bo', role: 'SALA_EVIDENCIAS', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', phone: '77334567', badgeNumber: 'IIT-025', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-enc', name: 'Mayor Lic. Gonzalo Terrazas', username: 'encargado', email: 'encargado.pericial@iitcup.bo', role: 'ENCARGADO_SERVICIOS', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', phone: '77345678', badgeNumber: 'IIT-005', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-perito1', name: 'Cap. Ing. David Justiniano', username: 'djustiniano', email: 'd.justiniano@iitcup.bo', role: 'PERITO', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', phone: '77356789', badgeNumber: 'PER-102', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-perito2', name: 'Dra. Claudia Barrientos', username: 'cbarrientos', email: 'c.barrientos@iitcup.bo', role: 'PERITO', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', sectionId: 'sec-1', sectionName: 'Balística Forense', phone: '77367890', badgeNumber: 'PER-105', active: true, createdAt: '2026-01-01T08:00:00Z' },
-  { id: 'usr-tec1', name: 'Tco. Marcelo Flores', username: 'mflores', email: 'm.flores@iitcup.bo', role: 'TECNICO', officeId: 'off-1', officeName: 'Oficina Regional Santa Cruz - Central', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', phone: '77378901', badgeNumber: 'TEC-201', active: true, createdAt: '2026-01-01T08:00:00Z' }
+  { id: 'usr-admin', name: 'CAP. JUAN ALBERTO ROJAS CAMACHO', grado: 'CAP.', paternalLastName: 'ROJAS', maternalLastName: 'CAMACHO', firstName: 'JUAN', secondName: 'ALBERTO', ci: '6439119', gender: 'M', email: 'ROJASCAMACHO@gmail.com', escalafon: '5052', role: 'ADMIN', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'JEFE DEL REAFUC SANTA CRUZ', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'ROJASCAMACHO@gmail.com', password: '6439119', phone: '6439119', badgeNumber: '5052', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-encargado', name: 'MY. CARLOS EDUARDO CALVO MORALES', grado: 'MY.', paternalLastName: 'CALVO', maternalLastName: 'MORALES', firstName: 'CARLOS', secondName: 'EDUARDO', ci: '6211971', gender: 'M', email: 'CALVOMORALES@gmail.com', escalafon: '5050-OF', role: 'ENCARGADO_SERVICIOS', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'JEFE DPTAL. DEL IITCUP SANTA CRUZ', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'CALVOMORALES@gmail.com', password: '6211971', phone: '6211971', badgeNumber: '5050-OF', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-millares', name: 'MY. NESTOR HERNAN MILLARES CARDENAS', grado: 'MY.', paternalLastName: 'MILLARES', maternalLastName: 'CARDENAS', firstName: 'NESTOR', secondName: 'HERNAN', ci: '6720304', gender: 'M', email: 'MILLARESCARDENAS@gmail.com', escalafon: '5051', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION DOCUMENTOLOGIA Y HUELLOGRAFIA', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'MILLARESCARDENAS@gmail.com', password: '6720304', phone: '6720304', badgeNumber: '5051', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-ajllahuanca', name: 'TTE. VLADIMIR AJLLAHUANCA CHURA', grado: 'TTE.', paternalLastName: 'AJLLAHUANCA', maternalLastName: 'CHURA', firstName: 'VLADIMIR', secondName: '', ci: '9137934', gender: 'M', email: 'AJLLAHUANCA CHURA@gmail.com', escalafon: '5053', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENCARGADO DE LA SECCION SERVICIO TECNICO AUXILIAR', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'AJLLAHUANCA CHURA@gmail.com', password: '9137934', phone: '9137934', badgeNumber: '5053', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-huanca-j', name: 'TTE. JHONNY DORIAM HUANCA GUTIERREZ', grado: 'TTE.', paternalLastName: 'HUANCA', maternalLastName: 'GUTIERREZ', firstName: 'JHONNY', secondName: 'DORIAM', ci: '6113277', gender: 'M', email: 'HUANCAGUTIERREZ@gmail.com', escalafon: '5055', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENCARGADO DEL SIIC SCZ', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'HUANCAGUTIERREZ@gmail.com', password: '6113277', phone: '6113277', badgeNumber: '5055', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-vallejos', name: 'SOF. MY. ORLANDO VALLEJOS VALDIVIA', grado: 'SOF. MY.', paternalLastName: 'VALLEJOS', maternalLastName: 'VALDIVIA', firstName: 'ORLANDO', secondName: '', ci: '4383788', gender: 'M', email: 'VALLEJOSVALDIVIA@gmail.com', escalafon: '5056', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'VALLEJOSVALDIVIA@gmail.com', password: '4383788', phone: '4383788', badgeNumber: '5056', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-chura', name: 'SOF. 1RO. CONSTANCIO CHURA PAUCARA', grado: 'SOF. 1RO.', paternalLastName: 'CHURA', maternalLastName: 'PAUCARA', firstName: 'CONSTANCIO', secondName: '', ci: '4802933', gender: 'M', email: 'CHURAPAUCARA@gmail.com', escalafon: '5057', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'EXPERTO EN ARMAS REAFUC', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'CHURAPAUCARA@gmail.com', password: '4802933', phone: '4802933', badgeNumber: '5057', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-camacho-o', name: 'SOF. 2DO. ORLANDO CAMACHO VIA', grado: 'SOF. 2DO.', paternalLastName: 'CAMACHO', maternalLastName: 'VIA', firstName: 'ORLANDO', secondName: '', ci: '5844840', gender: 'M', email: 'CAMACHOVIA @gmail.com', escalafon: '5058', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFROMATICA, CRIMINALISTICA DE CAMPO Y BALISTICA', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'CAMACHOVIA @gmail.com', password: '5844840', phone: '5844840', badgeNumber: '5058', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-cusi', name: 'SOF. 2DO. SONIA CUSI CASTILLO', grado: 'SOF. 2DO.', paternalLastName: 'CUSI', maternalLastName: 'CASTILLO', firstName: 'SONIA', secondName: '', ci: '6052515', gender: 'F', email: 'CUSICASTILLO@gmail.com', escalafon: '5059', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'CUSICASTILLO@gmail.com', password: '6052515', phone: '6052515', badgeNumber: '5059', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-alvarado', name: 'SGTO. MY. MARCO ANTONIO ALVARADO QUINO', grado: 'SGTO. MY.', paternalLastName: 'ALVARADO', maternalLastName: 'QUINO', firstName: 'MARCO', secondName: 'ANTONIO', ci: '5475940', gender: 'M', email: 'ALVARADOQUINO@gmail.com', escalafon: '5063', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION CRIMINALISTICA DE CAMPO E INFORMATICA', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'ALVARADOQUINO@gmail.com', password: '5475940', phone: '5475940', badgeNumber: '5063', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-huanca-g', name: 'SGTO. MY. GENARO EDUARDO HUANCA PADILLA', grado: 'SGTO. MY.', paternalLastName: 'HUANCA', maternalLastName: 'PADILLA', firstName: 'GENARO', secondName: 'EDUARDO', ci: '4879020', gender: 'M', email: 'HUANCAPADILLA@gmail.com', escalafon: '5064', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION TOXICOLOGIA', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'HUANCAPADILLA@gmail.com', password: '4879020', phone: '4879020', badgeNumber: '5064', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-huanca-r', name: 'SGTO. MY. RAQUEL HUANCA QUISPE', grado: 'SGTO. MY.', paternalLastName: 'HUANCA', maternalLastName: 'QUISPE', firstName: 'RAQUEL', secondName: '', ci: '6724318', gender: 'F', email: 'HUANCAQUISPE@gmail.com', escalafon: '5065', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'HUANCAQUISPE@gmail.com', password: '6724318', phone: '6724318', badgeNumber: '5065', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-tancara', name: 'SGTO. MY. JANETH TANCARA CARAZANI', grado: 'SGTO. MY.', paternalLastName: 'TANCARA', maternalLastName: 'CARAZANI', firstName: 'JANETH', secondName: '', ci: '6741477', gender: 'F', email: 'TANCARACARAZANI@gmail.com', escalafon: '5066', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'TANCARACARAZANI@gmail.com', password: '6741477', phone: '6741477', badgeNumber: '5066', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-alaca', name: 'SGTO. 1RO. EBER EDGAR ALACA GIRONDA', grado: 'SGTO. 1RO.', paternalLastName: 'ALACA', maternalLastName: 'GIRONDA', firstName: 'EBER', secondName: 'EDGAR', ci: '6989700', gender: 'M', email: 'ALACAGIRONDA@gmail.com', escalafon: '5067', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA, CRIMINALISTICA DE CAMPO', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'ALACAGIRONDA@gmail.com', password: '6989700', phone: '6989700', badgeNumber: '5067', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-apaza', name: 'SGTO. 1RO. DIEGO ARMANDO APAZA ARHUATA', grado: 'SGTO. 1RO.', paternalLastName: 'APAZA', maternalLastName: 'ARHUATA', firstName: 'DIEGO', secondName: 'ARMANDO', ci: '8328728', gender: 'M', email: 'APAZAARHUATA@gmail.com', escalafon: '5068', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENROLADOR DEL SIIC', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'APAZAARHUATA@gmail.com', password: '8328728', phone: '8328728', badgeNumber: '5068', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-calcina', name: 'SGTO. 1RO. GROBER SANTOS CALCINA CONDORI', grado: 'SGTO. 1RO.', paternalLastName: 'CALCINA', maternalLastName: 'CONDORI', firstName: 'GROBER', secondName: 'SANTOS', ci: '7079232', gender: 'M', email: 'CALCINACONDORI@gmail.com', escalafon: '5069', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION CRIMINALISTICA DE CAMPO', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'CALCINACONDORI@gmail.com', password: '7079232', phone: '7079232', badgeNumber: '5069', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-machaca', name: 'SGTO. 1RO. ROMER DIEGO MACHACA SURCO', grado: 'SGTO. 1RO.', paternalLastName: 'MACHACA', maternalLastName: 'SURCO', firstName: 'ROMER', secondName: 'DIEGO', ci: '6798822', gender: 'M', email: 'MACHACASURCO@gmail.com', escalafon: '5071', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION CRIMINLAISTICA DE CAMPO', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'MACHACASURCO@gmail.com', password: '6798822', phone: '6798822', badgeNumber: '5071', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-arce', name: 'SGTO. 2DO. WILSON ARCE VELA', grado: 'SGTO. 2DO.', paternalLastName: 'ARCE', maternalLastName: 'VELA', firstName: 'WILSON', secondName: '', ci: '12790852', gender: 'M', email: 'ARCEVELA@gmail.com', escalafon: '5074', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'ARCEVELA@gmail.com', password: '12790852', phone: '12790852', badgeNumber: '5074', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-coro', name: 'SGTO. 2DO. MAICOL FERMIN CORO CONDORI', grado: 'SGTO. 2DO.', paternalLastName: 'CORO', maternalLastName: 'CONDORI', firstName: 'MAICOL', secondName: 'FERMIN', ci: '8240750', gender: 'M', email: 'COROCONDORI@gmail.com', escalafon: '5075', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION CRIMINALISTICA DE CAMPO', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'COROCONDORI@gmail.com', password: '8240750', phone: '8240750', badgeNumber: '5075', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-garcia', name: 'SGTO. FREDDY GUSTAVO GARCIA CHOQUE', grado: 'SGTO.', paternalLastName: 'GARCIA', maternalLastName: 'CHOQUE', firstName: 'FREDDY', secondName: 'GUSTAVO', ci: '6087530', gender: 'M', email: 'GARCIACHOQUE@gmail.com', escalafon: '5076', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION DOCUMENTOLOGIA E INFORMATICA', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'GARCIACHOQUE@gmail.com', password: '6087530', phone: '6087530', badgeNumber: '5076', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-vargas', name: 'SGTO. CRISTHIAN MATEO VARGAS LLANQUE', grado: 'SGTO.', paternalLastName: 'VARGAS', maternalLastName: 'LLANQUE', firstName: 'CRISTHIAN', secondName: 'MATEO', ci: '10682350', gender: 'M', email: 'VARGASLLANQUE@gmail.com', escalafon: '5077', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION CRIMINALISTICA DE CAMPO E INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'VARGASLLANQUE@gmail.com', password: '10682350', phone: '10682350', badgeNumber: '5077', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-antezana', name: 'MY. SERV. ASTRID FABIANA ANTEZANA VASQUEZ', grado: 'MY. SERV.', paternalLastName: 'ANTEZANA', maternalLastName: 'VASQUEZ', firstName: 'ASTRID', secondName: 'FABIANA', ci: '2463797', gender: 'F', email: 'ANTEZANAVASQUEZ@gmail.com', escalafon: '5078', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION PSICOLOGIA', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'ANTEZANAVASQUEZ@gmail.com', password: '2463797', phone: '2463797', badgeNumber: '5078', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-rec', name: 'SGTO. 1RO. GLADYS ROMERO MAMANI', grado: 'SGTO. 1RO.', paternalLastName: 'ROMERO', maternalLastName: 'MAMANI', firstName: 'GLADYS', secondName: '', ci: '8320443', gender: 'F', email: 'ROMEROMAMANI@gmail.com', escalafon: '5073', role: 'RECEPCION', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'AUXILIAR PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'ROMEROMAMANI@gmail.com', password: '8320443', phone: '8320443', badgeNumber: '5073', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-sala', name: 'SGTO. 1RO. MONICA MACEDA ANTEZANA', grado: 'SGTO. 1RO.', paternalLastName: 'MACEDA', maternalLastName: 'ANTEZANA', firstName: 'MONICA', secondName: '', ci: '9011600', gender: 'F', email: 'MACEDAANTEZANA@gmail.com', escalafon: '5072', role: 'SALA_EVIDENCIAS', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENROLADOR DEL SIIC DIPROVE', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'MACEDAANTEZANA@gmail.com', password: '9011600', phone: '9011600', badgeNumber: '5072', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-cortez', name: 'TTE. ALVARO YURI CORTEZ ANIBARRO', grado: 'TTE.', paternalLastName: 'CORTEZ', maternalLastName: 'ANIBARRO', firstName: 'ALVARO', secondName: 'YURI', ci: '10933967', gender: 'M', email: 'CORTEZANIBARRO@gmail.com', escalafon: '5054', role: 'TECNICO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'AUX. DE PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], technicalAreas: ['INFORMÁTICA'], username: 'CORTEZANIBARRO@gmail.com', password: '10933967', phone: '10933967', badgeNumber: '5054', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-nava', name: 'SOF. 2DO. JUAN JOSE EDGAR NAVA ANTORIANO', grado: 'SOF. 2DO.', paternalLastName: 'NAVA', maternalLastName: 'ANTORIANO', firstName: 'JUAN JOSE', secondName: 'EDGAR', ci: '3590541', gender: 'M', email: 'NAVAANTORIANO@gmail.com', escalafon: '5060', role: 'TECNICO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'AUXILIAR PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], technicalAreas: ['INFORMÁTICA'], username: 'NAVAANTORIANO@gmail.com', password: '3590541', phone: '3590541', badgeNumber: '5060', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-poma', name: 'SOF. 2DO. ANGELA NADIR POMA', grado: 'SOF. 2DO.', paternalLastName: 'POMA', maternalLastName: '', firstName: 'ANGELA', secondName: 'NADIR', ci: '6751673', gender: 'F', email: 'POMA@gmail.com', escalafon: '5061', role: 'TECNICO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENROLADOR DEL SIIC', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], technicalAreas: ['INFORMÁTICA'], username: 'POMA@gmail.com', password: '6751673', phone: '6751673', badgeNumber: '5061', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-tamayo', name: 'SOF. 2DO. RONAL TAMAYO ARENAS', grado: 'SOF. 2DO.', paternalLastName: 'TAMAYO', maternalLastName: 'ARENAS', firstName: 'RONAL', secondName: '', ci: '6073363', gender: 'M', email: 'TAMAYOARENAS@gmail.com', escalafon: '5062', role: 'TECNICO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'AUXILIAR PERITO DE LA SECCION INFORMATICA', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], technicalAreas: ['INFORMÁTICA'], username: 'TAMAYOARENAS@gmail.com', password: '6073363', phone: '6073363', badgeNumber: '5062', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-escalera', name: 'SGTO. 1RO. ALEYDA ESCALERA CASILLA', grado: 'SGTO. 1RO.', paternalLastName: 'ESCALERA', maternalLastName: 'CASILLA', firstName: 'ALEYDA', secondName: '', ci: '8813264', gender: 'F', email: 'ESCALERACASILLA@gmail.com', escalafon: '5070', role: 'TECNICO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENROLADOR DEL SIIC FELCC', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], technicalAreas: ['INFORMÁTICA'], username: 'ESCALERACASILLA@gmail.com', password: '8813264', phone: '8813264', badgeNumber: '5070', active: true, createdAt: '2026-01-01T08:00:00Z' }
 ];
 
 export const getStored = <T>(key: string, defaultValue: T): T => {
@@ -90,7 +112,10 @@ export const initStorage = () => {
   if (!localStorage.getItem(DB_KEYS.SERVICES) || currentStoredServices.length < 20 || !currentStoredServices.some(s => s.area)) {
     setStored(DB_KEYS.SERVICES, DEFAULT_SERVICES);
   }
-  if (!localStorage.getItem(DB_KEYS.USERS)) setStored(DB_KEYS.USERS, DEFAULT_USERS);
+  const currentUsers = getStored<User[]>(DB_KEYS.USERS, []);
+  if (!localStorage.getItem(DB_KEYS.USERS) || currentUsers.length < 29 || !currentUsers.some(u => u.ci === '6439119')) {
+    setStored(DB_KEYS.USERS, DEFAULT_USERS);
+  }
   if (!localStorage.getItem(DB_KEYS.SEQUENCE)) setStored(DB_KEYS.SEQUENCE, 5);
 
   // Seed initial requirements if none
@@ -398,30 +423,128 @@ export const initStorage = () => {
   }
 
   // Audit Logs initial seed
-  if (!localStorage.getItem(DB_KEYS.AUDIT_LOGS)) {
+  const currentAudits = getStored<AuditLog[]>(DB_KEYS.AUDIT_LOGS, []);
+  if (!localStorage.getItem(DB_KEYS.AUDIT_LOGS) || currentAudits.length < 5) {
     const initialAudits: AuditLog[] = [
       {
-        id: 'aud-1',
+        id: 'aud-10',
+        userId: 'usr-1',
+        userName: 'CAP. JUAN ROJAS CAMACHO',
+        userRole: 'ADMIN',
+        dateTime: '2026-08-10T07:15:00Z',
+        ip: '192.168.1.100 (Central SCZ)',
+        action: 'INICIO_SESION',
+        module: 'Autenticación',
+        previousState: 'Desconectado',
+        newState: 'Inicio de sesión exitoso con rol ADMINISTRADOR'
+      },
+      {
+        id: 'aud-9',
+        userId: 'usr-1',
+        userName: 'CAP. JUAN ROJAS CAMACHO',
+        userRole: 'ADMIN',
+        dateTime: '2026-08-10T07:10:00Z',
+        ip: '192.168.1.100 (Central SCZ)',
+        action: 'MODIFICACION_ESTADO_USUARIO',
+        module: 'Gestión de Usuarios',
+        previousState: 'HABILITADO',
+        newState: 'Se actualizó la configuración del personal policial'
+      },
+      {
+        id: 'aud-8',
+        userId: 'usr-2',
+        userName: 'MY. CARLOS EDUARDO CALVO MORALES',
+        userRole: 'ENCARGADO_SERVICIOS',
+        dateTime: '2026-08-09T16:45:00Z',
+        ip: '192.168.1.102',
+        action: 'ASIGNACION_PERITO',
+        module: 'Servicios Periciales',
+        previousState: 'EN_REVISION',
+        newState: 'Asignado a TTE. VLADIMIR AJLLAHUANCA CHURA (Informática Forense)'
+      },
+      {
+        id: 'aud-7',
+        userId: 'usr-3',
+        userName: 'MY. NESTOR HERNAN MILLARES CARDENAS',
+        userRole: 'PERITO',
+        dateTime: '2026-08-08T14:20:00Z',
+        ip: '192.168.1.115',
+        action: 'SUBIDA_INFORME',
+        module: 'Mis Casos / Informes',
+        previousState: 'EN_PROCESO',
+        newState: 'Carga de Dictamen Pericial N° 088/2026 para RUP SCZ-7-000003'
+      },
+      {
+        id: 'aud-6',
+        userId: 'usr-4',
+        userName: 'TTE. VLADIMIR AJLLAHUANCA CHURA',
+        userRole: 'PERITO',
+        dateTime: '2026-08-08T11:00:00Z',
+        ip: '192.168.1.120',
+        action: 'INICIO_PERITAJE',
+        module: 'Mis Casos',
+        previousState: 'ASIGNADO',
+        newState: 'Iniciado estudio técnico pericial en RUP SCZ-7-000002'
+      },
+      {
+        id: 'aud-5',
+        userId: 'usr-sala',
+        userName: 'SGTO. 1RO. MONICA MACEDA ANTEZANA',
+        userRole: 'SALA_EVIDENCIAS',
+        dateTime: '2026-08-07T15:30:00Z',
+        ip: '192.168.1.55',
+        action: 'REGISTRO_EVIDENCIA',
+        module: 'Sala de Evidencias',
+        previousState: 'PENDIENTE_INGRESO',
+        newState: 'Evidencia ingresada en Custodia - Casillero B-04'
+      },
+      {
+        id: 'aud-4',
         userId: 'usr-rec',
-        userName: 'Sgt. Ana María Rojas',
+        userName: 'SGTO. 1RO. GLADYS ROMERO MAMANI',
         userRole: 'RECEPCION',
-        dateTime: '2026-08-01T09:30:00Z',
+        dateTime: '2026-08-07T09:15:00Z',
         ip: '192.168.1.45',
         action: 'CREACION_REQUERIMIENTO',
         module: 'Recepción',
-        newState: 'RUP SCZ-7-000001 creado exitosamente.'
+        previousState: 'NUEVO',
+        newState: 'Requerimiento RUP SCZ-7-000002 registrado desde FELCC'
+      },
+      {
+        id: 'aud-3',
+        userId: 'usr-25',
+        userName: 'TTE. ALVARO YURI CORTEZ ANIBARRO',
+        userRole: 'TECNICO',
+        dateTime: '2026-08-06T10:00:00Z',
+        ip: '192.168.1.108',
+        action: 'INICIO_SESION',
+        module: 'Autenticación',
+        previousState: 'Desconectado',
+        newState: 'Inicio de sesión exitoso'
       },
       {
         id: 'aud-2',
         userId: 'usr-enc',
-        userName: 'Mayor Lic. Gonzalo Terrazas',
+        userName: 'MY. CARLOS EDUARDO CALVO MORALES',
         userRole: 'ENCARGADO_SERVICIOS',
         dateTime: '2026-08-01T11:00:00Z',
         ip: '192.168.1.10',
         action: 'ASIGNACION_PERITO',
         module: 'Servicios Periciales',
         previousState: 'EN_REVISION',
-        newState: 'ASIGNADO a Dra. Claudia Barrientos'
+        newState: 'ASIGNADO a SOF. 2DO. ORLANDO CAMACHO VIA'
+      },
+      {
+        id: 'aud-1',
+        userId: 'usr-rec',
+        userName: 'SGTO. 1RO. GLADYS ROMERO MAMANI',
+        userRole: 'RECEPCION',
+        dateTime: '2026-08-01T09:30:00Z',
+        ip: '192.168.1.45',
+        action: 'CREACION_REQUERIMIENTO',
+        module: 'Recepción',
+        previousState: 'NUEVO',
+        newState: 'RUP SCZ-7-000001 creado exitosamente.'
       }
     ];
     setStored(DB_KEYS.AUDIT_LOGS, initialAudits);

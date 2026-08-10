@@ -48,16 +48,74 @@ export const ServiciosView: React.FC = () => {
   const [observations, setObservations] = useState('Plazo máximo otorgado para entrega de informe: 5 días hábiles.');
   const [reviewedDataConfirmed, setReviewedDataConfirmed] = useState(true);
 
-  const peritosList = users.filter(u => u.role === 'PERITO' && u.active);
-  const tecnicosList = users.filter(u => u.role === 'TECNICO' && u.active);
+  // Helper check for perito specialization across up to 3 assigned sections
+  const isUserQualifiedForSection = (u: User, reqSecId: string, reqSecName: string) => {
+    if (u.sectionIds && u.sectionIds.includes(reqSecId)) return true;
+    if (u.sectionId === reqSecId) return true;
+    if (u.sectionNames && u.sectionNames.some(sn => sn.toLowerCase() === reqSecName.toLowerCase())) return true;
+    if (u.sectionName && u.sectionName.toLowerCase().includes(reqSecName.toLowerCase())) return true;
+    return false;
+  };
+
+  // Peritos and Técnicos filtered by the requirement's requested forensic section
+  const sectionPeritos = selectedReq
+    ? users.filter(
+        u =>
+          u.role === 'PERITO' &&
+          u.active &&
+          isUserQualifiedForSection(u, selectedReq.sectionId, selectedReq.sectionName)
+      )
+    : [];
+
+  const otherPeritos = selectedReq
+    ? users.filter(
+        u =>
+          u.role === 'PERITO' &&
+          u.active &&
+          !isUserQualifiedForSection(u, selectedReq.sectionId, selectedReq.sectionName)
+      )
+    : [];
+
+  const sectionTecnicos = selectedReq
+    ? users.filter(
+        u =>
+          u.role === 'TECNICO' &&
+          u.active &&
+          isUserQualifiedForSection(u, selectedReq.sectionId, selectedReq.sectionName)
+      )
+    : [];
+
+  const otherTecnicos = selectedReq
+    ? users.filter(
+        u =>
+          u.role === 'TECNICO' &&
+          u.active &&
+          !isUserQualifiedForSection(u, selectedReq.sectionId, selectedReq.sectionName)
+      )
+    : [];
 
   // Filter requirements pending review
   const pendingReqs = requirements.filter(r => r.status === 'EN_REVISION' || r.status === 'REGISTRADO');
 
   const handleOpenProveidoModal = (req: Requirement) => {
     setSelectedReq(req);
-    if (peritosList.length > 0) setAssignedPeritoId(peritosList[0].id);
-    if (tecnicosList.length > 0) setAssignedTecnicoId(tecnicosList[0].id);
+
+    // Auto-select perito from matching section(s)
+    const matchingPeritos = users.filter(
+      u =>
+        u.role === 'PERITO' &&
+        u.active &&
+        isUserQualifiedForSection(u, req.sectionId, req.sectionName)
+    );
+    const matchingTecnicos = users.filter(
+      u =>
+        u.role === 'TECNICO' &&
+        u.active &&
+        isUserQualifiedForSection(u, req.sectionId, req.sectionName)
+    );
+
+    setAssignedPeritoId(matchingPeritos[0]?.id || '');
+    setAssignedTecnicoId(matchingTecnicos[0]?.id || '');
     setReviewedDataConfirmed(false);
     setShowProveidoModal(true);
   };
@@ -83,6 +141,22 @@ export const ServiciosView: React.FC = () => {
 
     const peritoObj = users.find(u => u.id === assignedPeritoId);
     const tecnicoObj = users.find(u => u.id === assignedTecnicoId);
+
+    // Strict validation: Verify perito belongs to the requested section
+    if (decision === 'ASIGNAR_PERITO' && peritoObj) {
+      const isMatchingSection = isUserQualifiedForSection(
+        peritoObj,
+        selectedReq.sectionId,
+        selectedReq.sectionName
+      );
+
+      if (!isMatchingSection && peritoObj.sectionName) {
+        alert(
+          `❌ Error de Asignación por Especialidad:\n\nEl perito "${peritoObj.name}" tiene asignadas las áreas: "${peritoObj.sectionNames?.join(', ') || peritoObj.sectionName}".\nSin embargo, la pericia solicitada requiere la especialidad de: "${selectedReq.sectionName}".\n\nNo es posible designar un perito de otra área para esta pericia.`
+        );
+        return;
+      }
+    }
 
     addProveido({
       requirementId: selectedReq.id,
@@ -577,39 +651,84 @@ export const ServiciosView: React.FC = () => {
 
                     {decision === 'ASIGNAR_PERITO' && (
                       <div className="space-y-3 bg-emerald-50 dark:bg-emerald-950/40 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800">
-                        <div>
-                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px]">
-                            Perito Asignado *
-                          </label>
-                          <select
-                            value={assignedPeritoId}
-                            onChange={e => setAssignedPeritoId(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs font-bold"
-                          >
-                            <option value="">-- Seleccionar Perito --</option>
-                            {peritosList.map(p => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.badgeNumber || 'PERITO'}) - {p.sectionName}
-                              </option>
-                            ))}
-                          </select>
+                        
+                        {/* Section Specialty Badge Indicator */}
+                        <div className="p-2.5 bg-emerald-900/80 text-amber-300 rounded-lg text-[11px] font-bold flex items-center justify-between border border-emerald-700">
+                          <span>Sección Solicitada:</span>
+                          <span className="bg-amber-400 text-emerald-950 px-2 py-0.5 rounded font-extrabold">
+                            {selectedReq.sectionName}
+                          </span>
                         </div>
 
+                        {/* Perito Select */}
                         <div>
                           <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px]">
-                            Técnico Asignado (Opcional)
+                            Perito Asignado (Especialista en {selectedReq.sectionName}) *
+                          </label>
+
+                          {sectionPeritos.length === 0 ? (
+                            <div className="p-3 bg-red-950/80 border border-red-800 rounded-lg text-red-200 text-[11px] space-y-1">
+                              <span className="font-bold block">⚠️ No existen peritos registrados para esta sección:</span>
+                              <p>Actualmente no hay peritos activos asignados a la especialidad de "{selectedReq.sectionName}". Por favor, registre o modifique un perito en el módulo de <strong className="text-amber-300">Gestión de Usuarios</strong>.</p>
+                            </div>
+                          ) : (
+                            <select
+                              value={assignedPeritoId}
+                              onChange={e => setAssignedPeritoId(e.target.value)}
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-900 dark:text-slate-100"
+                              required
+                            >
+                              <option value="">-- Seleccionar Perito de {selectedReq.sectionName} --</option>
+                              <optgroup label={`PERITOS DE LA SECCIÓN: ${selectedReq.sectionName.toUpperCase()} (${sectionPeritos.length})`}>
+                                {sectionPeritos.map(p => (
+                                  <option key={p.id} value={p.id}>
+                                    ✓ {p.name} ({p.badgeNumber || 'PERITO'}) - {p.sectionName}
+                                  </option>
+                                ))}
+                              </optgroup>
+
+                              {otherPeritos.length > 0 && (
+                                <optgroup label={`PERITOS DE OTRAS ÁREAS (NO PERMITIDOS - RESTRICCIÓN DE ESPECIALIDAD)`}>
+                                  {otherPeritos.map(p => (
+                                    <option key={p.id} value={p.id} disabled>
+                                      🚫 {p.name} ({p.badgeNumber || 'PERITO'}) - [{p.sectionName || 'Sin Sección'}]
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              )}
+                            </select>
+                          )}
+                        </div>
+
+                        {/* Técnico Select */}
+                        <div>
+                          <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1 text-[11px]">
+                            Técnico Asignado (Especialidad: {selectedReq.sectionName}) (Opcional)
                           </label>
                           <select
                             value={assignedTecnicoId}
                             onChange={e => setAssignedTecnicoId(e.target.value)}
-                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs"
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-xs text-slate-900 dark:text-slate-100"
                           >
-                            <option value="">-- Seleccionar Técnico (Opcional) --</option>
-                            {tecnicosList.map(t => (
-                              <option key={t.id} value={t.id}>
-                                {t.name} ({t.badgeNumber || 'TÉCNICO'})
-                              </option>
-                            ))}
+                            <option value="">-- Sin Técnico Asignado (Opcional) --</option>
+                            {sectionTecnicos.length > 0 && (
+                              <optgroup label={`TÉCNICOS DE LA SECCIÓN: ${selectedReq.sectionName.toUpperCase()}`}>
+                                {sectionTecnicos.map(t => (
+                                  <option key={t.id} value={t.id}>
+                                    ✓ {t.name} ({t.badgeNumber || 'TÉCNICO'})
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
+                            {otherTecnicos.length > 0 && (
+                              <optgroup label={`TÉCNICOS DE OTRAS ÁREAS (RESTRINGIDO)`}>
+                                {otherTecnicos.map(t => (
+                                  <option key={t.id} value={t.id} disabled>
+                                    🚫 {t.name} - [{t.sectionName || 'Otra Sección'}]
+                                  </option>
+                                ))}
+                              </optgroup>
+                            )}
                           </select>
                         </div>
                       </div>

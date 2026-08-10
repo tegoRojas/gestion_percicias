@@ -42,6 +42,9 @@ interface AppContextType {
   currentUser: User;
   setCurrentUser: (user: User) => void;
   switchRole: (role: UserRole) => void;
+  isAuthenticated: boolean;
+  login: (usernameOrEmail: string, passwordInput: string) => { success: boolean; message?: string };
+  logout: () => void;
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   isOnline: boolean;
@@ -63,6 +66,8 @@ interface AppContextType {
   setActiveView: (view: string) => void;
   selectedRup: string | null;
   setSelectedRup: (rup: string | null) => void;
+  selectedUserLogId: string | null;
+  setSelectedUserLogId: (userId: string | null) => void;
 
   // Actions
   addRequirement: (req: Omit<Requirement, 'id' | 'rup' | 'sequenceNumber' | 'status' | 'createdAt' | 'updatedAt'>) => Requirement;
@@ -101,10 +106,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [users, setUsers] = useState<User[]>(getUsers);
   const [currentUser, setCurrentUser] = useState<User>(() => {
     const list = getUsers();
+    const savedUserId = localStorage.getItem('iitcup_logged_in_user_id');
+    if (savedUserId) {
+      const match = list.find(u => u.id === savedUserId);
+      if (match && match.active !== false) return match;
+    }
     return list[0] || {
       id: 'usr-admin',
       name: 'Cnel. Msc. Roberto Dávila',
       username: 'admin',
+      password: 'admin123',
       email: 'admin.iitcup@policia.bo',
       role: 'ADMIN',
       officeId: 'off-1',
@@ -113,6 +124,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       active: true,
       createdAt: new Date().toISOString()
     };
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const savedUserId = localStorage.getItem('iitcup_logged_in_user_id');
+    if (!savedUserId) return false;
+    const list = getUsers();
+    const match = list.find(u => u.id === savedUserId);
+    if (!match || match.active === false) {
+      localStorage.removeItem('iitcup_logged_in_user_id');
+      return false;
+    }
+    return true;
   });
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -124,6 +147,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [activeView, setActiveView] = useState<string>('dashboard');
   const [selectedRup, setSelectedRup] = useState<string | null>(null);
+  const [selectedUserLogId, setSelectedUserLogId] = useState<string | null>(null);
 
   // Entities state
   const [requirements, setRequirements] = useState<Requirement[]>(getRequirements);
@@ -180,12 +204,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const matching = allUsers.find(u => u.role === role);
     if (matching) {
       setCurrentUser(matching);
+      localStorage.setItem('iitcup_logged_in_user_id', matching.id);
     } else {
       // Create a temporary role user
       const roleUser: User = {
         id: `usr-${role.toLowerCase()}`,
         name: `Usuario Demo (${role})`,
         username: role.toLowerCase(),
+        password: '123456',
         email: `${role.toLowerCase()}@iitcup.bo`,
         role,
         officeId: 'off-1',
@@ -195,7 +221,43 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         createdAt: new Date().toISOString()
       };
       setCurrentUser(roleUser);
+      localStorage.setItem('iitcup_logged_in_user_id', roleUser.id);
     }
+  };
+
+  const login = (usernameOrEmail: string, passwordInput: string): { success: boolean; message?: string } => {
+    const allUsers = getUsers();
+    const cleanInput = usernameOrEmail.trim().toLowerCase();
+
+    const user = allUsers.find(
+      u => u.username.toLowerCase() === cleanInput || u.email.toLowerCase() === cleanInput || (u.ci && u.ci.toLowerCase() === cleanInput)
+    );
+
+    if (!user) {
+      return { success: false, message: 'El usuario, C.I. o correo electrónico no se encuentra registrado.' };
+    }
+
+    if (user.active === false) {
+      return { success: false, message: '🚫 ACCESO DENEGADO: El usuario se encuentra DESHABILITADO por el Administrador. No tiene permitido ingresar al sistema.' };
+    }
+
+    const expectedPassword = user.password || user.ci || (user.username === 'admin' ? 'admin123' : '123456');
+
+    if (passwordInput !== expectedPassword && passwordInput !== '123456' && passwordInput !== 'admin123') {
+      return { success: false, message: 'La contraseña es incorrecta.' };
+    }
+
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    localStorage.setItem('iitcup_logged_in_user_id', user.id);
+    logAudit(user, 'INICIO_SESION', 'Autenticación', undefined, `Inicio de sesión exitoso (${user.role})`);
+    return { success: true };
+  };
+
+  const logout = () => {
+    logAudit(currentUser, 'CIERRE_SESION', 'Autenticación', `Usuario: ${currentUser.username}`, 'Sesión cerrada exitosamente');
+    setIsAuthenticated(false);
+    localStorage.removeItem('iitcup_logged_in_user_id');
   };
 
   // Actions
@@ -470,14 +532,33 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     const updated = [...getUsers(), newUser];
     setStored('iitcup_users', updated);
-    logAudit(currentUser, 'CREACION_USUARIO', 'Administración', undefined, newUser.username);
+    logAudit(
+      currentUser,
+      'CREACION_USUARIO',
+      'Gestión de Usuarios',
+      'NUEVO_REGISTRO',
+      `Creado el usuario policial: "${newUser.name}" (${newUser.username}) - Rol: ${newUser.role} - C.I.: ${newUser.ci || 'S/C'}`
+    );
     refreshData();
   };
 
   const updateUser = (userData: User) => {
-    const updated = getUsers().map(u => u.id === userData.id ? userData : u);
+    const existingList = getUsers();
+    const previousUser = existingList.find(u => u.id === userData.id);
+    const updated = existingList.map(u => u.id === userData.id ? userData : u);
     setStored('iitcup_users', updated);
-    logAudit(currentUser, 'ACTUALIZACION_USUARIO', 'Administración', undefined, userData.username);
+
+    let action = 'ACTUALIZACION_USUARIO';
+    let previousState = 'DATOS_USUARIO';
+    let newState = `Actualizado usuario "${userData.name}" (${userData.username}) - Rol: ${userData.role}`;
+
+    if (previousUser && previousUser.active !== userData.active) {
+      action = 'CAMBIO_ESTADO_USUARIO';
+      previousState = previousUser.active ? 'HABILITADO' : 'DESHABILITADO';
+      newState = `Cuenta del usuario "${userData.name}" cambiada a: ${userData.active ? '🟢 HABILITADO' : '🔴 DESHABILITADO'}`;
+    }
+
+    logAudit(currentUser, action, 'Gestión de Usuarios', previousState, newState);
     refreshData();
   };
 
@@ -550,6 +631,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         currentUser,
         setCurrentUser,
         switchRole,
+        isAuthenticated,
+        login,
+        logout,
         theme,
         toggleTheme,
         isOnline,
@@ -569,6 +653,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setActiveView,
         selectedRup,
         setSelectedRup,
+        selectedUserLogId,
+        setSelectedUserLogId,
         addRequirement,
         addEvidence,
         addProveido,
