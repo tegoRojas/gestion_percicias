@@ -15,7 +15,12 @@ import {
   XCircle,
   Clock,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  Database,
+  Copy,
+  Check,
+  Download,
+  FileCode
 } from 'lucide-react';
 
 export const SeccionesView: React.FC = () => {
@@ -40,6 +45,8 @@ export const SeccionesView: React.FC = () => {
   // Modals
   const [showSecModal, setShowSecModal] = useState(false);
   const [showSrvModal, setShowSrvModal] = useState(false);
+  const [showSqlModal, setShowSqlModal] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
   const [editingService, setEditingService] = useState<ServiceItem | null>(null);
 
   // Section Form State
@@ -88,6 +95,109 @@ export const SeccionesView: React.FC = () => {
       return matchesSearch && matchesArea && matchesType && matchesStatus;
     });
   }, [services, searchQuery, filterArea, filterType, filterStatus]);
+
+  // Generate full Supabase SQL Script dynamically for Secciones and Servicios
+  const generatedSqlScript = useMemo(() => {
+    const escapeSql = (str: string | undefined | null) => {
+      if (!str) return 'NULL';
+      return `'${str.replace(/'/g, "''")}'`;
+    };
+
+    let sql = `-- =============================================================================\n`;
+    sql += `-- SCRIPT DE MIGRACIÓN DE SECCIONES Y SERVICIOS PERICIALES IITCUP SANTA CRUZ\n`;
+    sql += `-- Base de Datos PostgreSQL / Supabase\n`;
+    sql += `-- Fecha de Generación: ${new Date().toLocaleString('es-BO')}\n`;
+    sql += `-- Total Secciones: ${sections.length} | Total Servicios: ${services.length}\n`;
+    sql += `-- =============================================================================\n\n`;
+
+    sql += `-- 1. Habilitar extensión UUID si es requerida\n`;
+    sql += `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`;
+
+    sql += `-- 2. Crear Tabla 'secciones'\n`;
+    sql += `CREATE TABLE IF NOT EXISTS public.secciones (\n`;
+    sql += `    id VARCHAR(50) PRIMARY KEY,\n`;
+    sql += `    code VARCHAR(30) UNIQUE NOT NULL,\n`;
+    sql += `    name VARCHAR(150) NOT NULL,\n`;
+    sql += `    description TEXT,\n`;
+    sql += `    manager_name VARCHAR(150),\n`;
+    sql += `    active BOOLEAN DEFAULT TRUE NOT NULL,\n`;
+    sql += `    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL\n`;
+    sql += `);\n\n`;
+
+    sql += `-- 3. Crear Tabla 'servicios'\n`;
+    sql += `CREATE TABLE IF NOT EXISTS public.servicios (\n`;
+    sql += `    id VARCHAR(50) PRIMARY KEY,\n`;
+    sql += `    code VARCHAR(30),\n`;
+    sql += `    name TEXT NOT NULL,\n`;
+    sql += `    area VARCHAR(150) NOT NULL,\n`;
+    sql += `    section_id VARCHAR(50) REFERENCES public.secciones(id) ON DELETE SET NULL,\n`;
+    sql += `    section_name VARCHAR(150),\n`;
+    sql += `    type VARCHAR(50) NOT NULL,\n`;
+    sql += `    estimated_days INTEGER DEFAULT 5 NOT NULL,\n`;
+    sql += `    active BOOLEAN DEFAULT TRUE NOT NULL,\n`;
+    sql += `    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL\n`;
+    sql += `);\n\n`;
+
+    sql += `-- 4. Crear Índices de Rendimiento en Supabase\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_secciones_code ON public.secciones(code);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_secciones_active ON public.secciones(active);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_servicios_area ON public.servicios(area);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_servicios_type ON public.servicios(type);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_servicios_section_id ON public.servicios(section_id);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_servicios_active ON public.servicios(active);\n\n`;
+
+    sql += `-- 5. Inserción de Secciones Forenses (UPSERT)\n`;
+    if (sections.length > 0) {
+      sql += `INSERT INTO public.secciones (id, code, name, description, manager_name, active) VALUES\n`;
+      const secValues = sections.map(s => {
+        return `  (${escapeSql(s.id)}, ${escapeSql(s.code)}, ${escapeSql(s.name)}, ${escapeSql(s.description)}, ${escapeSql(s.managerName)}, ${s.active !== false ? 'TRUE' : 'FALSE'})`;
+      }).join(',\n');
+      sql += secValues + `\nON CONFLICT (id) DO UPDATE SET\n`;
+      sql += `    code = EXCLUDED.code,\n`;
+      sql += `    name = EXCLUDED.name,\n`;
+      sql += `    description = EXCLUDED.description,\n`;
+      sql += `    manager_name = EXCLUDED.manager_name,\n`;
+      sql += `    active = EXCLUDED.active;\n\n`;
+    }
+
+    sql += `-- 6. Inserción de Catálogo de Servicios Periciales (UPSERT)\n`;
+    if (services.length > 0) {
+      sql += `INSERT INTO public.servicios (id, code, name, area, section_id, section_name, type, estimated_days, active) VALUES\n`;
+      const srvValues = services.map(srv => {
+        return `  (${escapeSql(srv.id)}, ${escapeSql(srv.code)}, ${escapeSql(srv.name)}, ${escapeSql(srv.area || srv.sectionName || 'GENERAL')}, ${escapeSql(srv.sectionId)}, ${escapeSql(srv.sectionName)}, ${escapeSql(srv.type)}, ${srv.estimatedDays || 5}, ${srv.active !== false ? 'TRUE' : 'FALSE'})`;
+      }).join(',\n');
+      sql += srvValues + `\nON CONFLICT (id) DO UPDATE SET\n`;
+      sql += `    code = EXCLUDED.code,\n`;
+      sql += `    name = EXCLUDED.name,\n`;
+      sql += `    area = EXCLUDED.area,\n`;
+      sql += `    section_id = EXCLUDED.section_id,\n`;
+      sql += `    section_name = EXCLUDED.section_name,\n`;
+      sql += `    type = EXCLUDED.type,\n`;
+      sql += `    estimated_days = EXCLUDED.estimated_days,\n`;
+      sql += `    active = EXCLUDED.active;\n\n`;
+    }
+
+    sql += `-- Fin del Script de Migración de Secciones y Servicios para Supabase\n`;
+    return sql;
+  }, [sections, services]);
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(generatedSqlScript);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
+  };
+
+  const handleDownloadSql = () => {
+    const blob = new Blob([generatedSqlScript], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `script_secciones_servicios_supabase_${new Date().toISOString().slice(0, 10)}.sql`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const handleOpenNewServiceModal = () => {
     setEditingService(null);
@@ -208,8 +318,17 @@ export const SeccionesView: React.FC = () => {
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
+            onClick={() => setShowSqlModal(true)}
+            className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-amber-400 shadow-xs cursor-pointer transition-all"
+            title="Generar script SQL para Supabase"
+          >
+            <Database className="w-4 h-4 text-slate-950" />
+            <span>Script SQL Supabase</span>
+          </button>
+
+          <button
             onClick={handleResetCatalog}
-            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 border border-slate-300 dark:border-slate-700"
+            className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 border border-slate-300 dark:border-slate-700 cursor-pointer"
             title="Restablecer al catálogo base de 101 servicios oficial"
           >
             <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
@@ -618,6 +737,83 @@ export const SeccionesView: React.FC = () => {
               <div><label className="block font-bold">Encargado de Sección</label><input type="text" value={secManager} onChange={e => setSecManager(e.target.value)} className="w-full border rounded p-2" /></div>
               <div className="pt-2 flex justify-end gap-2"><button type="button" onClick={() => setShowSecModal(false)} className="px-3 py-1.5 bg-slate-200 rounded">Cancelar</button><button type="submit" className="px-4 py-1.5 bg-emerald-800 text-white font-bold rounded">Guardar</button></div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Supabase SQL Script Generator Modal for Secciones & Servicios */}
+      {showSqlModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="bg-slate-950 text-white p-4 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="font-extrabold text-sm uppercase tracking-wider">
+                    Script SQL para Migración a Supabase (Secciones y Servicios)
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    Incluye definición de tablas 'secciones' y 'servicios', llaves foráneas, índices y migración de {sections.length} Secciones y {services.length} Servicios Periciales.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSqlModal(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Action Bar */}
+            <div className="p-3 bg-slate-100 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                <FileCode className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Compatibilidad: PostgreSQL 12+ / Supabase SQL Editor</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopySql}
+                  className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                    copiedSql
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-emerald-800 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  {copiedSql ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedSql ? '¡Copiado al Portapapeles!' : 'Copiar Script SQL'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadSql}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm border border-amber-400"
+                >
+                  <Download className="w-4 h-4 text-slate-950" />
+                  Descargar .sql
+                </button>
+              </div>
+            </div>
+
+            {/* Code Output */}
+            <div className="p-4 bg-slate-950 text-slate-100 overflow-y-auto font-mono text-xs leading-relaxed flex-1 select-all">
+              <pre className="whitespace-pre-wrap">{generatedSqlScript}</pre>
+            </div>
+
+            {/* Footer Notice */}
+            <div className="p-3 bg-slate-900 text-slate-400 text-[11px] border-t border-slate-800 flex items-center justify-between">
+              <span> Ejecuta este script en el <strong>SQL Editor</strong> del panel de control de tu proyecto en Supabase.</span>
+              <button
+                type="button"
+                onClick={() => setShowSqlModal(false)}
+                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

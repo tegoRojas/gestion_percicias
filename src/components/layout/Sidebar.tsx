@@ -14,7 +14,10 @@ import {
   Bell,
   Settings,
   Sliders,
-  Award
+  Award,
+  ShieldCheck,
+  CheckCheck,
+  Calendar
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -25,6 +28,9 @@ export const Sidebar: React.FC = () => {
     { id: 'recepcion', label: 'Recepción RUP', icon: FilePlus },
     { id: 'servicios', label: 'Servicios Periciales', icon: Briefcase },
     { id: 'mis_casos', label: 'Mis Casos Asignados', icon: FolderKanban },
+    { id: 'agenda', label: 'Agenda (Psicología)', icon: Calendar },
+    { id: 'revision_tecnica', label: 'Revisión Técnica (Área)', icon: ShieldCheck },
+    { id: 'control_calidad', label: 'Control de Calidad (Forma)', icon: CheckCheck },
     { id: 'evidencias', label: 'Sala de Evidencias', icon: PackageCheck },
     { id: 'reportes', label: 'Reportes y Estadísticas', icon: FileSpreadsheet },
     { id: 'usuarios', label: 'Gestión de Usuarios', icon: Users },
@@ -32,7 +38,7 @@ export const Sidebar: React.FC = () => {
     { id: 'oficinas', label: 'Oficinas Regionales', icon: Building2 },
     { id: 'auditoria', label: 'Auditoría e Histórico', icon: ShieldAlert },
     { id: 'notificaciones', label: 'Notificaciones', icon: Bell, badge: unreadCount },
-    { id: 'configuracion', label: 'Configuración / SQL', icon: Settings }
+    { id: 'configuracion', label: 'Instalador / Configuración', icon: Settings }
   ];
 
   const userAllowedViews = ROLE_ALLOWED_VIEWS[currentUser.role] || ['dashboard'];

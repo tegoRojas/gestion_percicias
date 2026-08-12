@@ -31,7 +31,8 @@ export const Header: React.FC = () => {
     readNotification,
     setActiveView,
     setSelectedRup,
-    requirements
+    requirements,
+    installPwaApp
   } = useApp();
 
   const [showRoleMenu, setShowRoleMenu] = useState(false);
@@ -69,7 +70,9 @@ export const Header: React.FC = () => {
     { role: 'SALA_EVIDENCIAS', label: 'Sala de Evidencias', desc: 'Control de cadena de custodia' },
     { role: 'ENCARGADO_SERVICIOS', label: 'Encargado Servicios', desc: 'Revisión, proveídos y asignación' },
     { role: 'PERITO', label: 'Perito Forense', desc: 'Atención de casos asignados e informes' },
-    { role: 'TECNICO', label: 'Técnico Forense', desc: 'Servicios técnicos especializados' }
+    { role: 'TECNICO', label: 'Técnico Forense', desc: 'Servicios técnicos especializados' },
+    { role: 'ENCARGADO_AREA', label: 'Encargado de Área', desc: 'Evaluación técnica y metodológica' },
+    { role: 'CONTROL_CALIDAD', label: 'Control de Calidad', desc: 'Verificación de formato y redacción' }
   ];
 
   return (
@@ -147,6 +150,16 @@ export const Header: React.FC = () => {
             {isOnline ? <Wifi className="w-3.5 h-3.5 text-emerald-400" /> : <WifiOff className="w-3.5 h-3.5 text-amber-400" />}
             <span className="hidden lg:inline">{isOnline ? 'Online' : 'Offline'}</span>
           </div>
+
+          {/* Quick Install Button */}
+          <button
+            onClick={() => setActiveView('configuracion')}
+            className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            title="Instalar el sistema en esta computadora o descargar instaladores"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Instalar PC</span>
+          </button>
 
           {/* Theme Toggle Button */}
           <button

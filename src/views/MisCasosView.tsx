@@ -19,8 +19,11 @@ import {
   FolderOpen,
   Download,
   FileCode,
-  AlertTriangle
+  AlertTriangle,
+  Calendar,
+  CalendarCheck
 } from 'lucide-react';
+import { AgendaModal } from '../components/AgendaModal';
 
 export const MisCasosView: React.FC = () => {
   const {
@@ -36,6 +39,10 @@ export const MisCasosView: React.FC = () => {
 
   const [selectedReq, setSelectedReq] = useState<Requirement | null>(null);
   const [showReportModal, setShowReportModal] = useState(false);
+
+  // Agenda Modal State
+  const [showAgendaModal, setShowAgendaModal] = useState(false);
+  const [selectedReqForAgenda, setSelectedReqForAgenda] = useState<Requirement | null>(null);
 
   // Detail Modal & Preview
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -223,6 +230,89 @@ export const MisCasosView: React.FC = () => {
                     </div>
                   ) : null}
 
+                  {/* BLOQUE DE AGENDAMIENTO PARA PSICOLOGÍA */}
+                  {(() => {
+                    const isPsych =
+                      req.sectionName?.toUpperCase().includes('PSICOLOG') ||
+                      req.serviceName?.toUpperCase().includes('PSICOLOG') ||
+                      req.sectionId === 'sec-9' ||
+                      req.sectionId === 'sec-2';
+
+                    if (!isPsych) return null;
+
+                    if (req.appointment) {
+                      return (
+                        <div className="bg-emerald-950 text-white p-3 rounded-xl border border-emerald-800 space-y-1.5 shadow-sm">
+                          <div className="flex items-center justify-between border-b border-emerald-800/80 pb-1.5">
+                            <div className="flex items-center gap-1.5 font-extrabold text-amber-300 text-xs">
+                              <CalendarCheck className="w-4 h-4 text-amber-400 shrink-0" />
+                              <span>CITA AGENDADA EN PSICOLOGÍA</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setSelectedReqForAgenda(req);
+                                setShowAgendaModal(true);
+                              }}
+                              className="text-amber-300 hover:text-white font-bold text-[10px] underline cursor-pointer"
+                            >
+                              Reagendar
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px]">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Fecha y Hora:</span>
+                              <strong className="text-amber-300 font-extrabold">{req.appointment.scheduledDate} a las {req.appointment.scheduledTime} hrs</strong>
+                            </div>
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Usuario:</span>
+                              <strong className="text-slate-100 font-bold truncate block">{req.appointment.userData}</strong>
+                            </div>
+                          </div>
+                          {(req.status === 'AGENDADO' || req.status === 'ASIGNADO') && (
+                            <div className="pt-1">
+                              <button
+                                onClick={() => {
+                                  updateWorkStatus(req.id, 'Iniciado', 'Inicio de evaluación psicológica pericial.');
+                                  alert(`¡Evaluación Pericial Iniciada!\nEl RUP ${req.rup} se encuentra ahora "EN PROCESO".`);
+                                }}
+                                className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[11px] rounded-lg shadow transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                Iniciar Evaluación Pericial
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (req.status === 'ASIGNADO') {
+                      return (
+                        <div className="bg-amber-500/10 dark:bg-amber-950/40 border border-amber-400 dark:border-amber-700/80 p-3 rounded-xl flex items-center justify-between gap-2">
+                          <div className="text-amber-900 dark:text-amber-300 text-[11px] font-semibold">
+                            <span className="font-extrabold block text-amber-900 dark:text-amber-300 flex items-center gap-1">
+                              <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                              Cita de Psicología Pendiente
+                            </span>
+                            <span className="text-[10px] text-amber-700 dark:text-amber-400">Debe agendar su cita antes de iniciar la evaluación pericial.</span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setSelectedReqForAgenda(req);
+                              setShowAgendaModal(true);
+                            }}
+                            className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs px-3 py-1.5 rounded-lg shadow transition-all shrink-0 cursor-pointer flex items-center gap-1"
+                          >
+                            <Calendar className="w-3.5 h-3.5" />
+                            Agendar Cita
+                          </button>
+                        </div>
+                      );
+                    }
+
+                    return null;
+                  })()}
+
                   <div className="text-xs space-y-1">
                     <div>
                       <span className="text-slate-500 font-semibold">Solicitante: </span>
@@ -253,9 +343,12 @@ export const MisCasosView: React.FC = () => {
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
                     
                     {/* Work Status Buttons */}
-                    {req.status === 'ASIGNADO' && (
+                    {(req.status === 'ASIGNADO' || req.status === 'AGENDADO') && (
                       <button
-                        onClick={() => updateWorkStatus(req.id, 'Iniciado', 'Trabajo pericial iniciado en laboratorio')}
+                        onClick={() => {
+                          updateWorkStatus(req.id, 'Iniciado', 'Trabajo pericial / evaluación iniciada.');
+                          alert(`¡Caso marcado como EN PROCESO!\nRUP ${req.rup}`);
+                        }}
                         className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 cursor-pointer"
                       >
                         <Play className="w-3.5 h-3.5" />
@@ -715,6 +808,16 @@ export const MisCasosView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Floating Agenda Modal for Psychology Appointments */}
+      <AgendaModal
+        isOpen={showAgendaModal}
+        onClose={() => {
+          setShowAgendaModal(false);
+          setSelectedReqForAgenda(null);
+        }}
+        selectedRequirement={selectedReqForAgenda}
+      />
 
     </div>
   );

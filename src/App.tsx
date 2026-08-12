@@ -16,6 +16,9 @@ import { ReportesView } from './views/ReportesView';
 import { AuditoríaView } from './views/AuditoriaView';
 import { NotificacionesView } from './views/NotificacionesView';
 import { ConfiguracionView } from './views/ConfiguracionView';
+import { RevisionTecnicaView } from './views/RevisionTecnicaView';
+import { ControlCalidadView } from './views/ControlCalidadView';
+import { AgendaView } from './views/AgendaView';
 
 import { LoginView } from './views/LoginView';
 import { ROLE_ALLOWED_VIEWS } from './types';
@@ -64,6 +67,12 @@ const MainLayout: React.FC = () => {
         return <ServiciosView />;
       case 'mis_casos':
         return <MisCasosView />;
+      case 'agenda':
+        return <AgendaView />;
+      case 'revision_tecnica':
+        return <RevisionTecnicaView />;
+      case 'control_calidad':
+        return <ControlCalidadView />;
       case 'usuarios':
         return <UsuariosView />;
       case 'secciones':

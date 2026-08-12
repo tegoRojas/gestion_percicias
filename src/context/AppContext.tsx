@@ -8,11 +8,14 @@ import {
   Proveido,
   WorkStatusLog,
   ReportUpload,
+  TechnicalReview,
+  QualityReview,
   AppNotification,
   AuditLog,
   Section,
   ServiceItem,
-  RegionalOffice
+  RegionalOffice,
+  PsychologyAppointment
 } from '../types';
 
 import {
@@ -29,6 +32,9 @@ import {
   getAuditLogs,
   getWorkLogs,
   getReportUploads,
+  getTechnicalReviews,
+  getQualityReviews,
+  getAppointments,
   generateNextRUP,
   logAudit,
   sendNotification,
@@ -61,6 +67,9 @@ interface AppContextType {
   auditLogs: AuditLog[];
   workLogs: WorkStatusLog[];
   reports: ReportUpload[];
+  technicalReviews: TechnicalReview[];
+  qualityReviews: QualityReview[];
+  appointments: PsychologyAppointment[];
 
   activeView: string;
   setActiveView: (view: string) => void;
@@ -75,6 +84,9 @@ interface AppContextType {
   addProveido: (proveido: Omit<Proveido, 'id' | 'dateTime' | 'registeredBy' | 'registeredById'>) => void;
   updateWorkStatus: (requirementId: string, status: 'Iniciado' | 'Concluido', notes?: string) => void;
   addReportUpload: (report: Omit<ReportUpload, 'id' | 'uploadDateTime' | 'uploadedBy' | 'uploadedById'>) => void;
+  addTechnicalReview: (review: Omit<TechnicalReview, 'id' | 'reviewedAt' | 'reviewerId' | 'reviewerName' | 'reviewerGrado'>) => void;
+  addQualityReview: (review: Omit<QualityReview, 'id' | 'reviewedAt' | 'reviewerId' | 'reviewerName' | 'reviewerGrado'>) => void;
+  addPsychologyAppointment: (appointment: Omit<PsychologyAppointment, 'id' | 'createdAt' | 'scheduledBy' | 'scheduledById'>) => void;
   addCustodyMovement: (log: Omit<CustodyLog, 'id' | 'dateTime'>, newEvidenceStatus?: EvidenceItem['status']) => void;
   deliverReportToAuthority: (reportId: string, receiverName: string) => void;
 
@@ -94,6 +106,8 @@ interface AppContextType {
   markNotificationRead: (id: string) => void;
   markAllNotificationsRead: () => void;
   refreshData: () => void;
+  canInstallPwa: boolean;
+  installPwaApp: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -161,6 +175,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(getAuditLogs);
   const [workLogs, setWorkLogs] = useState<WorkStatusLog[]>(getWorkLogs);
   const [reports, setReports] = useState<ReportUpload[]>(getReportUploads);
+  const [technicalReviews, setTechnicalReviews] = useState<TechnicalReview[]>(getTechnicalReviews);
+  const [qualityReviews, setQualityReviews] = useState<QualityReview[]>(getQualityReviews);
+  const [appointments, setAppointments] = useState<PsychologyAppointment[]>(getAppointments);
+
+  const [pwaPromptEvent, setPwaPromptEvent] = useState<any>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setPwaPromptEvent(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const installPwaApp = async () => {
+    if (pwaPromptEvent) {
+      pwaPromptEvent.prompt();
+      const choiceResult = await pwaPromptEvent.userChoice;
+      if (choiceResult.outcome === 'accepted') {
+        console.log('El usuario aceptó instalar la app de escritorio');
+      }
+      setPwaPromptEvent(null);
+    } else {
+      alert('Para instalar la aplicación IITCUP en su computadora o celular:\n\n1. En Google Chrome/Microsoft Edge (Windows/Mac/Linux):\n   Haga clic en el ícono de "Instalar" ⊕ en la barra de direcciones superior, o abra el menú (⋮) y elija "Instalar IITCUP".\n\n2. En teléfonos/tablets Android o iOS:\n   Seleccione "Agregar a la pantalla principal" desde el menú del navegador.\n\n3. Para instaladores ejecutables (.bat / .sh / docker):\n   Visite el Módulo de "Configuración e Instalador".');
+    }
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -197,6 +240,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setAuditLogs(getAuditLogs());
     setWorkLogs(getWorkLogs());
     setReports(getReportUploads());
+    setTechnicalReviews(getTechnicalReviews());
+    setQualityReviews(getQualityReviews());
+    setAppointments(getAppointments());
   };
 
   const switchRole = (role: UserRole) => {
@@ -448,26 +494,254 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       id: 'rep-' + Date.now(),
       uploadDateTime: now,
       uploadedBy: currentUser.name,
-      uploadedById: currentUser.id
+      uploadedById: currentUser.id,
+      currentReviewStage: 'PENDIENTE_REVISION_TECNICA'
     };
 
     const reportsList = [newReport, ...getReportUploads()];
     setStored('iitcup_reports', reportsList);
 
-    // Update Requirement status to CONCLUIDO if not already
+    // Update Requirement status to PENDIENTE_REVISION_TECNICA
     const reqs = getRequirements();
     const idx = reqs.findIndex(r => r.id === data.requirementId);
     if (idx !== -1) {
-      reqs[idx].status = 'CONCLUIDO';
+      reqs[idx].status = 'PENDIENTE_REVISION_TECNICA';
       reqs[idx].updatedAt = now;
       setStored('iitcup_requirements', reqs);
     }
 
-    logAudit(currentUser, 'CARGA_INFORME_PERICIAL', 'Perito/Técnico', undefined, `Informe ${data.documentNumber} cargado para RUP ${data.rup}`);
+    logAudit(currentUser, 'CARGA_INFORME_PERICIAL', 'Perito/Técnico', undefined, `Informe ${data.documentNumber} cargado para RUP ${data.rup}. Enviado a Revisión Técnica.`);
 
-    // Notify Sala de Evidencias and Reception
-    sendNotification('usr-sala', 'Informe Pericial Listo para Entrega', `Se cargó el informe ${data.documentNumber} para el RUP ${data.rup}.`, 'INFORME_LISTO', data.requirementId, data.rup);
-    sendNotification('usr-rec', 'Informe Pericial Listo', `El RUP ${data.rup} cuenta con informe listo.`, 'INFORME_LISTO', data.requirementId, data.rup);
+    // Notify Encargado de Área
+    sendNotification(
+      'usr-enc-area',
+      'Nuevo Informe para Revisión Técnica',
+      `El perito ${currentUser.name} cargó el informe ${data.documentNumber} para el RUP ${data.rup}. Requiere evaluación técnica.`,
+      'INFORME_LISTO',
+      data.requirementId,
+      data.rup
+    );
+
+    refreshData();
+  };
+
+  const addTechnicalReview = (
+    data: Omit<TechnicalReview, 'id' | 'reviewedAt' | 'reviewerId' | 'reviewerName' | 'reviewerGrado'>
+  ) => {
+    const now = new Date().toISOString();
+    const newReview: TechnicalReview = {
+      ...data,
+      id: 'trev-' + Date.now(),
+      reviewedAt: now,
+      reviewerId: currentUser.id,
+      reviewerName: currentUser.name,
+      reviewerGrado: currentUser.grado
+    };
+
+    const reviewsList = [newReview, ...getTechnicalReviews()];
+    setStored('iitcup_technical_reviews', reviewsList);
+
+    // Update Report and Requirement Stage
+    const currentReports = getReportUploads();
+    const repIdx = currentReports.findIndex(rep => rep.id === data.reportId);
+    const reqs = getRequirements();
+    const reqIdx = reqs.findIndex(r => r.id === data.requirementId);
+
+    const isApproved = data.status === 'APROBADO_TECNICO';
+    const nextStage = isApproved ? 'PENDIENTE_CONTROL_CALIDAD' : 'OBSERVADO_TECNICO';
+
+    if (repIdx !== -1) {
+      const prevReviews = currentReports[repIdx].technicalReviews || [];
+      currentReports[repIdx].technicalReviews = [newReview, ...prevReviews];
+      currentReports[repIdx].currentReviewStage = nextStage;
+      setStored('iitcup_reports', currentReports);
+    }
+
+    if (reqIdx !== -1) {
+      reqs[reqIdx].status = nextStage;
+      reqs[reqIdx].updatedAt = now;
+      setStored('iitcup_requirements', reqs);
+    }
+
+    logAudit(
+      currentUser,
+      isApproved ? 'APROBACION_TECNICA' : 'OBSERVACION_TECNICA',
+      'Encargado de Área',
+      'PENDIENTE_REVISION_TECNICA',
+      `Evaluación técnica realizada para RUP ${data.rup}: ${data.status}`
+    );
+
+    if (isApproved) {
+      // Notify Control de Calidad
+      sendNotification(
+        'usr-ctrl-calidad',
+        'Informe Aprobado Técnicamente - Pasar a Control de Calidad',
+        `El informe para RUP ${data.rup} fue APROBADO TÉCNICAMENTE por el Encargado de Área. Requiere revisión de forma.`,
+        'INFORME_LISTO',
+        data.requirementId,
+        data.rup
+      );
+      // Notify Author
+      if (repIdx !== -1) {
+        sendNotification(
+          currentReports[repIdx].uploadedById,
+          'Informe Aprobado Técnicamente',
+          `Su informe para RUP ${data.rup} ha sido aprobado en la evaluación técnica de área y pasó a Control de Calidad.`,
+          'CAMBIO_ESTADO',
+          data.requirementId,
+          data.rup
+        );
+      }
+    } else {
+      // Notify Author of observations
+      if (repIdx !== -1) {
+        sendNotification(
+          currentReports[repIdx].uploadedById,
+          'Observaciones Técnicas en Informe',
+          `Su informe para RUP ${data.rup} presenta OBSERVACIONES TÉCNICAS. Revise las correcciones solicitadas por el Encargado de Área.`,
+          'CAMBIO_ESTADO',
+          data.requirementId,
+          data.rup
+        );
+      }
+    }
+
+    refreshData();
+  };
+
+  const addQualityReview = (
+    data: Omit<QualityReview, 'id' | 'reviewedAt' | 'reviewerId' | 'reviewerName' | 'reviewerGrado'>
+  ) => {
+    const now = new Date().toISOString();
+    const newReview: QualityReview = {
+      ...data,
+      id: 'qrev-' + Date.now(),
+      reviewedAt: now,
+      reviewerId: currentUser.id,
+      reviewerName: currentUser.name,
+      reviewerGrado: currentUser.grado
+    };
+
+    const reviewsList = [newReview, ...getQualityReviews()];
+    setStored('iitcup_quality_reviews', reviewsList);
+
+    const currentReports = getReportUploads();
+    const repIdx = currentReports.findIndex(rep => rep.id === data.reportId);
+    const reqs = getRequirements();
+    const reqIdx = reqs.findIndex(r => r.id === data.requirementId);
+
+    const isApproved = data.status === 'APROBADO_CALIDAD';
+    const nextStage = isApproved ? 'CONCLUIDO' : 'OBSERVADO_CALIDAD';
+
+    if (repIdx !== -1) {
+      const prevReviews = currentReports[repIdx].qualityReviews || [];
+      currentReports[repIdx].qualityReviews = [newReview, ...prevReviews];
+      currentReports[repIdx].currentReviewStage = nextStage;
+      setStored('iitcup_reports', currentReports);
+    }
+
+    if (reqIdx !== -1) {
+      reqs[reqIdx].status = nextStage;
+      reqs[reqIdx].updatedAt = now;
+      setStored('iitcup_requirements', reqs);
+    }
+
+    logAudit(
+      currentUser,
+      isApproved ? 'APROBACION_CALIDAD' : 'OBSERVACION_CALIDAD',
+      'Control de Calidad',
+      'PENDIENTE_CONTROL_CALIDAD',
+      `Control de calidad de forma realizado para RUP ${data.rup}: ${data.status}`
+    );
+
+    if (isApproved) {
+      // Notify Author, Reception & Sala de Evidencias
+      if (repIdx !== -1) {
+        sendNotification(
+          currentReports[repIdx].uploadedById,
+          'Informe Final Aprobado por Control de Calidad',
+          `Su informe para RUP ${data.rup} aprobó satisfactoriamente el Control de Calidad de Forma. El caso queda CONCLUIDO.`,
+          'CAMBIO_ESTADO',
+          data.requirementId,
+          data.rup
+        );
+      }
+      sendNotification(
+        'usr-rec',
+        'Informe Concluido y Listo para Entrega',
+        `El RUP ${data.rup} aprobó Control de Calidad y está disponible para entrega formal al solicitante.`,
+        'INFORME_LISTO',
+        data.requirementId,
+        data.rup
+      );
+      sendNotification(
+        'usr-sala',
+        'Informe Concluido - Devolución/Salida de Evidencia',
+        `El RUP ${data.rup} ha concluido su ciclo de revisión de calidad.`,
+        'INFORME_LISTO',
+        data.requirementId,
+        data.rup
+      );
+    } else {
+      if (repIdx !== -1) {
+        sendNotification(
+          currentReports[repIdx].uploadedById,
+          'Observaciones de Forma en Control de Calidad',
+          `Su informe para RUP ${data.rup} tiene observaciones de formato y redacción en Control de Calidad. Subsane para proceder.`,
+          'CAMBIO_ESTADO',
+          data.requirementId,
+          data.rup
+        );
+      }
+    }
+
+    refreshData();
+  };
+
+  const addPsychologyAppointment = (
+    data: Omit<PsychologyAppointment, 'id' | 'createdAt' | 'scheduledBy' | 'scheduledById'>
+  ) => {
+    const now = new Date().toISOString();
+    const newAppointment: PsychologyAppointment = {
+      ...data,
+      id: 'apt-' + Date.now(),
+      createdAt: now,
+      scheduledBy: currentUser.name,
+      scheduledById: currentUser.id
+    };
+
+    const existingAppointments = [newAppointment, ...getAppointments()];
+    setStored('iitcup_appointments', existingAppointments);
+    setAppointments(existingAppointments);
+
+    // Update Requirement status to AGENDADO and embed appointment details
+    const reqs = getRequirements();
+    const idx = reqs.findIndex(r => r.id === data.requirementId);
+    if (idx !== -1) {
+      reqs[idx].status = 'AGENDADO';
+      reqs[idx].appointment = newAppointment;
+      reqs[idx].updatedAt = now;
+      setStored('iitcup_requirements', reqs);
+      setRequirements(reqs);
+
+      logAudit(
+        currentUser,
+        'AGENDAR_CITA_PSICOLOGIA',
+        'Psicología Forense',
+        'ASIGNADO',
+        `Cita agendada para RUP ${data.rup} el ${data.scheduledDate} a las ${data.scheduledTime} - Usuario: ${data.userData}`
+      );
+
+      // Send Notification
+      sendNotification(
+        'usr-enc',
+        'Nueva Cita de Psicología Agendada',
+        `El perito ${currentUser.name} agendó la cita del RUP ${data.rup} para el ${data.scheduledDate} a las ${data.scheduledTime}. Usuario: ${data.userData}`,
+        'CAMBIO_ESTADO',
+        data.requirementId,
+        data.rup
+      );
+    }
 
     refreshData();
   };
@@ -649,6 +923,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         auditLogs,
         workLogs,
         reports,
+        technicalReviews,
+        qualityReviews,
+        appointments,
         activeView,
         setActiveView,
         selectedRup,
@@ -660,6 +937,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         addProveido,
         updateWorkStatus,
         addReportUpload,
+        addTechnicalReview,
+        addQualityReview,
+        addPsychologyAppointment,
         addCustodyMovement,
         deliverReportToAuthority,
         addUser,
@@ -674,7 +954,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         readNotification,
         markNotificationRead: readNotification,
         markAllNotificationsRead,
-        refreshData
+        refreshData,
+        canInstallPwa: !!pwaPromptEvent,
+        installPwaApp
       }}
     >
       {children}

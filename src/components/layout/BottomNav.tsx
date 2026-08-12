@@ -8,7 +8,10 @@ import {
   Briefcase,
   FolderKanban,
   FileSpreadsheet,
-  Bell
+  Bell,
+  ShieldCheck,
+  CheckCheck,
+  Calendar
 } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
@@ -19,6 +22,9 @@ export const BottomNav: React.FC = () => {
     { id: 'recepcion', label: 'RUP', icon: FilePlus },
     { id: 'servicios', label: 'Servicios', icon: Briefcase },
     { id: 'mis_casos', label: 'Mis Casos', icon: FolderKanban },
+    { id: 'agenda', label: 'Agenda', icon: Calendar },
+    { id: 'revision_tecnica', label: 'Rev. Técnica', icon: ShieldCheck },
+    { id: 'control_calidad', label: 'Calidad', icon: CheckCheck },
     { id: 'evidencias', label: 'Evidencias', icon: PackageCheck },
     { id: 'reportes', label: 'Reportes', icon: FileSpreadsheet },
     { id: 'notificaciones', label: 'Alertas', icon: Bell, badge: unreadCount }

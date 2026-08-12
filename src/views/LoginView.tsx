@@ -172,7 +172,7 @@ export const LoginView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-left">
-              {users.slice(0, 6).map(u => {
+              {users.slice(0, 8).map(u => {
                 const pass = u.password || (u.username === 'admin' ? 'admin123' : '123456');
                 return (
                   <button

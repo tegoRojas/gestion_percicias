@@ -9,8 +9,11 @@ import {
   Proveido,
   WorkStatusLog,
   ReportUpload,
+  TechnicalReview,
+  QualityReview,
   AppNotification,
-  AuditLog
+  AuditLog,
+  PsychologyAppointment
 } from '../types';
 import { INITIAL_FORENSIC_SERVICES } from '../data/initialServices';
 
@@ -25,10 +28,13 @@ const DB_KEYS = {
   PROVEIDOS: 'iitcup_proveidos',
   WORK_LOGS: 'iitcup_work_logs',
   REPORTS: 'iitcup_reports',
+  TECHNICAL_REVIEWS: 'iitcup_technical_reviews',
+  QUALITY_REVIEWS: 'iitcup_quality_reviews',
   NOTIFICATIONS: 'iitcup_notifications',
   AUDIT_LOGS: 'iitcup_audit_logs',
   SEQUENCE: 'iitcup_rup_sequence',
-  SUPABASE_CONFIG: 'iitcup_supabase_cfg'
+  SUPABASE_CONFIG: 'iitcup_supabase_cfg',
+  APPOINTMENTS: 'iitcup_appointments'
 };
 
 // Initial Seed Data
@@ -56,6 +62,8 @@ const DEFAULT_SERVICES: ServiceItem[] = INITIAL_FORENSIC_SERVICES;
 const DEFAULT_USERS: User[] = [
   { id: 'usr-admin', name: 'CAP. JUAN ALBERTO ROJAS CAMACHO', grado: 'CAP.', paternalLastName: 'ROJAS', maternalLastName: 'CAMACHO', firstName: 'JUAN', secondName: 'ALBERTO', ci: '6439119', gender: 'M', email: 'ROJASCAMACHO@gmail.com', escalafon: '5052', role: 'ADMIN', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'JEFE DEL REAFUC SANTA CRUZ', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'ROJASCAMACHO@gmail.com', password: '6439119', phone: '6439119', badgeNumber: '5052', active: true, createdAt: '2026-01-01T08:00:00Z' },
   { id: 'usr-encargado', name: 'MY. CARLOS EDUARDO CALVO MORALES', grado: 'MY.', paternalLastName: 'CALVO', maternalLastName: 'MORALES', firstName: 'CARLOS', secondName: 'EDUARDO', ci: '6211971', gender: 'M', email: 'CALVOMORALES@gmail.com', escalafon: '5050-OF', role: 'ENCARGADO_SERVICIOS', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'JEFE DPTAL. DEL IITCUP SANTA CRUZ', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'CALVOMORALES@gmail.com', password: '6211971', phone: '6211971', badgeNumber: '5050-OF', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-enc-area', name: 'CAP. MAURICIO PEREZ VARGAS', grado: 'CAP.', paternalLastName: 'PEREZ', maternalLastName: 'VARGAS', firstName: 'MAURICIO', secondName: '', ci: '7788990', gender: 'M', email: 'PEREZVARGAS@gmail.com', escalafon: '5080', role: 'ENCARGADO_AREA', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENCARGADO DE ÁREA - EVALUACIÓN TÉCNICA FORENSE', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'PEREZVARGAS@gmail.com', password: '7788990', phone: '7788990', badgeNumber: '5080', active: true, createdAt: '2026-01-01T08:00:00Z' },
+  { id: 'usr-ctrl-calidad', name: 'DRA. MARIA RENE PAREDES ZURITA', grado: 'DRA.', paternalLastName: 'PAREDES', maternalLastName: 'ZURITA', firstName: 'MARIA', secondName: 'RENE', ci: '8899001', gender: 'F', email: 'PAREDESZURITA@gmail.com', escalafon: '5081', role: 'CONTROL_CALIDAD', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'RESPONSABLE DE CONTROL DE CALIDAD Y FORMA', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'PAREDESZURITA@gmail.com', password: '8899001', phone: '8899001', badgeNumber: '5081', active: true, createdAt: '2026-01-01T08:00:00Z' },
   { id: 'usr-millares', name: 'MY. NESTOR HERNAN MILLARES CARDENAS', grado: 'MY.', paternalLastName: 'MILLARES', maternalLastName: 'CARDENAS', firstName: 'NESTOR', secondName: 'HERNAN', ci: '6720304', gender: 'M', email: 'MILLARESCARDENAS@gmail.com', escalafon: '5051', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'PERITO DE LA SECCION DOCUMENTOLOGIA Y HUELLOGRAFIA', sectionId: 'sec-2', sectionName: 'Documentología y Grafotecnia', sectionIds: ['sec-2'], sectionNames: ['DOCUMENTOLOGÍA'], username: 'MILLARESCARDENAS@gmail.com', password: '6720304', phone: '6720304', badgeNumber: '5051', active: true, createdAt: '2026-01-01T08:00:00Z' },
   { id: 'usr-ajllahuanca', name: 'TTE. VLADIMIR AJLLAHUANCA CHURA', grado: 'TTE.', paternalLastName: 'AJLLAHUANCA', maternalLastName: 'CHURA', firstName: 'VLADIMIR', secondName: '', ci: '9137934', gender: 'M', email: 'AJLLAHUANCA CHURA@gmail.com', escalafon: '5053', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENCARGADO DE LA SECCION SERVICIO TECNICO AUXILIAR', sectionId: 'sec-4', sectionName: 'Informática y Telecomunicaciones Forenses', sectionIds: ['sec-4'], sectionNames: ['INFORMÁTICA'], username: 'AJLLAHUANCA CHURA@gmail.com', password: '9137934', phone: '9137934', badgeNumber: '5053', active: true, createdAt: '2026-01-01T08:00:00Z' },
   { id: 'usr-huanca-j', name: 'TTE. JHONNY DORIAM HUANCA GUTIERREZ', grado: 'TTE.', paternalLastName: 'HUANCA', maternalLastName: 'GUTIERREZ', firstName: 'JHONNY', secondName: 'DORIAM', ci: '6113277', gender: 'M', email: 'HUANCAGUTIERREZ@gmail.com', escalafon: '5055', role: 'PERITO', officeId: 'off-1', officeName: 'Central Santa Cruz', cargo: 'ENCARGADO DEL SIIC SCZ', sectionId: 'sec-1', sectionName: 'Balística Forense', sectionIds: ['sec-1'], sectionNames: ['BALÍSTICA'], username: 'HUANCAGUTIERREZ@gmail.com', password: '6113277', phone: '6113277', badgeNumber: '5055', active: true, createdAt: '2026-01-01T08:00:00Z' },
@@ -369,28 +377,87 @@ export const initStorage = () => {
     const initialNotifs: AppNotification[] = [
       {
         id: 'notif-1',
-        userId: 'usr-enc',
-        title: 'Nuevo Requerimiento Registrado',
-        message: 'Se ha ingresado el RUP SCZ-7-000003 correspondiente a Documentología y Grafotecnia.',
-        requirementId: 'req-103',
-        rup: 'SCZ-7-000003',
-        createdAt: '2026-08-03T08:45:00Z',
+        userId: 'usr-enc-area',
+        title: 'Nuevo Informe en Espera de Revisión Técnica',
+        message: 'Se cargó el Dictamen Pericial RUP SCZ-7-000001 (Balística Forense). Requiere evaluación técnica de área.',
+        requirementId: 'req-101',
+        rup: 'SCZ-7-000001',
+        createdAt: '2026-08-08T10:00:00Z',
         status: 'Pendiente',
-        type: 'NUEVO_REQUERIMIENTO'
+        type: 'INFORME_LISTO'
       },
       {
         id: 'notif-2',
-        userId: 'usr-perito1',
-        title: 'Asignación de Peritaje',
-        message: 'Le ha sido asignado el caso RUP SCZ-7-000002 de Extracción Forense UFED.',
+        userId: 'usr-ctrl-calidad',
+        title: 'Nuevo Informe para Control de Calidad',
+        message: 'El RUP SCZ-7-000002 ha sido APROBADO TÉCNICAMENTE. Requiere revisión de aspectos de forma y estructura.',
         requirementId: 'req-102',
         rup: 'SCZ-7-000002',
-        createdAt: '2026-08-02T16:20:00Z',
+        createdAt: '2026-08-09T14:30:00Z',
         status: 'Pendiente',
-        type: 'ASIGNACION'
+        type: 'INFORME_LISTO'
       }
     ];
     setStored(DB_KEYS.NOTIFICATIONS, initialNotifs);
+  }
+
+  // Seed initial reports & reviews
+  if (!localStorage.getItem(DB_KEYS.REPORTS)) {
+    const initialReports: ReportUpload[] = [
+      {
+        id: 'rep-101',
+        requirementId: 'req-101',
+        rup: 'SCZ-7-000001',
+        uploadDateTime: '2026-08-08T09:30:00Z',
+        uploadedBy: 'TTE. JHONNY DORIAM HUANCA GUTIERREZ',
+        uploadedById: 'usr-huanca-j',
+        reportType: 'DICTAMEN_PERICIAL',
+        documentNumber: 'DICTAMEN-IITCUP-SCZ-101/2026',
+        summary: 'Estudio balístico comparativo concluido. Se determinó coincidencia en huellas de percusión y rayado helicoidal entre la pistola Taurus y las 3 vainas servidas.',
+        attachments: [{ id: 'att-rep-1', name: 'Dictamen_Balistico_SCZ_101.pdf', size: 1850000, type: 'application/pdf', uploadedAt: '2026-08-08T09:30:00Z' }],
+        currentReviewStage: 'PENDIENTE_REVISION_TECNICA'
+      },
+      {
+        id: 'rep-102',
+        requirementId: 'req-102',
+        rup: 'SCZ-7-000002',
+        uploadDateTime: '2026-08-09T11:15:00Z',
+        uploadedBy: 'TTE. VLADIMIR AJLLAHUANCA CHURA',
+        uploadedById: 'usr-ajllahuanca',
+        reportType: 'INFORME_TECNICO',
+        documentNumber: 'INFORME-IITCUP-SCZ-202/2026',
+        summary: 'Extracción de datos móviles realizada con éxito utilizando UFED Cellebrite. Se adjunta reporte de 852 chats de WhatsApp y registro de llamadas.',
+        attachments: [{ id: 'att-rep-2', name: 'Informe_UFED_Chats_SCZ_202.pdf', size: 3400000, type: 'application/pdf', uploadedAt: '2026-08-09T11:15:00Z' }],
+        currentReviewStage: 'PENDIENTE_CONTROL_CALIDAD',
+        technicalReviews: [
+          {
+            id: 'trev-1',
+            reportId: 'rep-102',
+            requirementId: 'req-102',
+            rup: 'SCZ-7-000002',
+            reviewedAt: '2026-08-09T14:30:00Z',
+            reviewerId: 'usr-enc-area',
+            reviewerName: 'CAP. MAURICIO PEREZ VARGAS',
+            reviewerGrado: 'CAP.',
+            status: 'APROBADO_TECNICO',
+            metodologiaScore: 5,
+            puntosPericiaAbsolvidos: true,
+            instrumentalValido: true,
+            conclusionesFundamentadas: true,
+            observations: 'La metodología de extracción física y lógica aplicada con UFED Cellebrite es conforme a los estándares técnicos internacionales de informática forense.'
+          }
+        ]
+      }
+    ];
+    setStored(DB_KEYS.REPORTS, initialReports);
+
+    // Synchronize initial requirements statuses accordingly
+    const reqs = getStored<Requirement[]>(DB_KEYS.REQUIREMENTS, []);
+    const r1 = reqs.find(r => r.id === 'req-101');
+    if (r1) r1.status = 'PENDIENTE_REVISION_TECNICA';
+    const r2 = reqs.find(r => r.id === 'req-102');
+    if (r2) r2.status = 'PENDIENTE_CONTROL_CALIDAD';
+    setStored(DB_KEYS.REQUIREMENTS, reqs);
   }
 
   // Seed custody logs
@@ -564,6 +631,9 @@ export const getNotifications = (): AppNotification[] => getStored(DB_KEYS.NOTIF
 export const getAuditLogs = (): AuditLog[] => getStored(DB_KEYS.AUDIT_LOGS, []);
 export const getWorkLogs = (): WorkStatusLog[] => getStored(DB_KEYS.WORK_LOGS, []);
 export const getReportUploads = (): ReportUpload[] => getStored(DB_KEYS.REPORTS, []);
+export const getTechnicalReviews = (): TechnicalReview[] => getStored(DB_KEYS.TECHNICAL_REVIEWS, []);
+export const getQualityReviews = (): QualityReview[] => getStored(DB_KEYS.QUALITY_REVIEWS, []);
+export const getAppointments = (): PsychologyAppointment[] => getStored(DB_KEYS.APPOINTMENTS, []);
 
 // RUP Sequence Generator
 export const generateNextRUP = (officeId?: string): { rup: string; seq: number } => {

@@ -3,26 +3,34 @@ export type UserRole =
   | 'RECEPCION' 
   | 'SALA_EVIDENCIAS' 
   | 'ENCARGADO_SERVICIOS' 
+  | 'ENCARGADO_AREA' 
+  | 'CONTROL_CALIDAD' 
   | 'PERITO' 
   | 'TECNICO';
 
 export const ROLE_ALLOWED_VIEWS: Record<UserRole, string[]> = {
   ADMIN: [
-    'dashboard', 'recepcion', 'evidencias', 'servicios', 'mis_casos',
-    'reportes', 'usuarios', 'secciones', 'oficinas', 'auditoria',
-    'notificaciones', 'configuracion'
+    'dashboard', 'recepcion', 'evidencias', 'servicios', 'mis_casos', 'agenda',
+    'revision_tecnica', 'control_calidad', 'reportes', 'usuarios',
+    'secciones', 'oficinas', 'auditoria', 'notificaciones', 'configuracion'
   ],
   RECEPCION: [
     'dashboard', 'recepcion', 'evidencias', 'notificaciones'
   ],
   ENCARGADO_SERVICIOS: [
-    'dashboard', 'servicios', 'mis_casos', 'evidencias', 'reportes', 'notificaciones'
+    'dashboard', 'servicios', 'mis_casos', 'agenda', 'revision_tecnica', 'control_calidad', 'evidencias', 'reportes', 'notificaciones'
+  ],
+  ENCARGADO_AREA: [
+    'dashboard', 'revision_tecnica', 'mis_casos', 'agenda', 'servicios', 'evidencias', 'notificaciones'
+  ],
+  CONTROL_CALIDAD: [
+    'dashboard', 'control_calidad', 'mis_casos', 'servicios', 'evidencias', 'notificaciones'
   ],
   PERITO: [
-    'dashboard', 'mis_casos', 'evidencias', 'notificaciones'
+    'dashboard', 'mis_casos', 'agenda', 'evidencias', 'notificaciones'
   ],
   TECNICO: [
-    'dashboard', 'mis_casos', 'evidencias', 'notificaciones'
+    'dashboard', 'mis_casos', 'agenda', 'evidencias', 'notificaciones'
   ],
   SALA_EVIDENCIAS: [
     'dashboard', 'evidencias', 'notificaciones'
@@ -102,11 +110,30 @@ export type RequirementStatus =
   | 'REGISTRADO' 
   | 'EN_REVISION' 
   | 'ASIGNADO' 
+  | 'AGENDADO'
   | 'EN_PROCESO' 
+  | 'PENDIENTE_REVISION_TECNICA'
+  | 'OBSERVADO_TECNICO'
+  | 'PENDIENTE_CONTROL_CALIDAD'
+  | 'OBSERVADO_CALIDAD'
   | 'CONCLUIDO' 
   | 'ENTREGADO' 
   | 'FINALIZADO' 
   | 'REPRESENTADO';
+
+export interface PsychologyAppointment {
+  id: string;
+  requirementId: string;
+  rup: string;
+  scheduledDate: string; // YYYY-MM-DD
+  scheduledTime: string; // HH:MM
+  userData: string;      // Datos del usuario que se someterá a la pericia
+  location?: string;     // Consultorio, Cámara Gesell, etc.
+  notes?: string;        // Observaciones
+  scheduledBy: string;
+  scheduledById: string;
+  createdAt: string;
+}
 
 export interface Requirement {
   id: string;
@@ -133,6 +160,7 @@ export interface Requirement {
   registeredBy: string; // Name of Receptionist
   registeredById: string;
   attachments: FileAttachment[];
+  appointment?: PsychologyAppointment;
   createdAt: string;
   updatedAt: string;
 }
@@ -213,6 +241,40 @@ export interface WorkStatusLog {
   notes?: string;
 }
 
+export interface TechnicalReview {
+  id: string;
+  reportId: string;
+  requirementId: string;
+  rup: string;
+  reviewedAt: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerGrado?: string;
+  status: 'APROBADO_TECNICO' | 'OBSERVADO_TECNICO';
+  metodologiaScore: number; // 1 to 5
+  puntosPericiaAbsolvidos: boolean;
+  instrumentalValido: boolean;
+  conclusionesFundamentadas: boolean;
+  observations: string; // Detalle de evaluación o correcciones técnicas requeridas
+}
+
+export interface QualityReview {
+  id: string;
+  reportId: string;
+  requirementId: string;
+  rup: string;
+  reviewedAt: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerGrado?: string;
+  status: 'APROBADO_CALIDAD' | 'OBSERVADO_CALIDAD';
+  formatoEstandarValido: boolean;
+  redaccionOrtografiaValida: boolean;
+  estructuraLegalValida: boolean;
+  firmasYAnexosValidos: boolean;
+  observations: string; // Detalle de evaluación o correcciones de forma requeridas
+}
+
 export interface ReportUpload {
   id: string;
   requirementId: string;
@@ -226,6 +288,9 @@ export interface ReportUpload {
   attachments: FileAttachment[];
   deliveryToAuthorityDate?: string;
   authorityReceiverName?: string;
+  technicalReviews?: TechnicalReview[];
+  qualityReviews?: QualityReview[];
+  currentReviewStage?: 'PENDIENTE_REVISION_TECNICA' | 'OBSERVADO_TECNICO' | 'PENDIENTE_CONTROL_CALIDAD' | 'OBSERVADO_CALIDAD' | 'CONCLUIDO';
 }
 
 export interface AppNotification {

@@ -1,12 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { User, UserRole } from '../types';
-import { Users, Plus, Shield, ShieldAlert, CheckCircle2, X, Layers, Search, Key, UserCheck, Ban, Lock, Unlock, History } from 'lucide-react';
+import { Users, Plus, Shield, ShieldAlert, CheckCircle2, X, Layers, Search, Key, UserCheck, Ban, Lock, Unlock, History, Database, Copy, Check, Download, FileCode } from 'lucide-react';
 
 export const UsuariosView: React.FC = () => {
   const { currentUser, users, offices, sections, services, addUser, updateUser, setActiveView, setSelectedUserLogId } = useApp();
 
   const [showModal, setShowModal] = useState(false);
+  const [showSqlModal, setShowSqlModal] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -279,6 +281,136 @@ export const UsuariosView: React.FC = () => {
     );
   }, [users, searchTerm]);
 
+  // Generate full Supabase SQL Script dynamically
+  const generatedSqlScript = useMemo(() => {
+    const escapeSql = (str: string | undefined | null) => {
+      if (!str) return 'NULL';
+      return `'${str.replace(/'/g, "''")}'`;
+    };
+
+    const escapeSqlArray = (arr: string[] | undefined | null) => {
+      if (!arr || arr.length === 0) return 'ARRAY[]::TEXT[]';
+      const items = arr.map(item => `'${item.replace(/'/g, "''")}'`).join(', ');
+      return `ARRAY[${items}]::TEXT[]`;
+    };
+
+    let sql = `-- =============================================================================\n`;
+    sql += `-- SCRIPT DE MIGRACIÓN DE USUARIOS POLICIALES IITCUP SANTA CRUZ PARA SUPABASE\n`;
+    sql += `-- Base de Datos PostgreSQL / Supabase\n`;
+    sql += `-- Generado: ${new Date().toLocaleString('es-BO')}\n`;
+    sql += `-- Total Usuarios Exportados: ${users.length}\n`;
+    sql += `-- =============================================================================\n\n`;
+
+    sql += `-- 1. Habilitar extensión UUID si es necesaria\n`;
+    sql += `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";\n\n`;
+
+    sql += `-- 2. Crear Tabla 'usuarios' en la base de datos Supabase\n`;
+    sql += `CREATE TABLE IF NOT EXISTS public.usuarios (\n`;
+    sql += `    id VARCHAR(50) PRIMARY KEY,\n`;
+    sql += `    grado VARCHAR(30),\n`;
+    sql += `    paternal_last_name VARCHAR(100),\n`;
+    sql += `    maternal_last_name VARCHAR(100),\n`;
+    sql += `    first_name VARCHAR(100),\n`;
+    sql += `    second_name VARCHAR(100),\n`;
+    sql += `    full_name VARCHAR(255) NOT NULL,\n`;
+    sql += `    ci VARCHAR(30) UNIQUE,\n`;
+    sql += `    gender VARCHAR(10),\n`;
+    sql += `    email VARCHAR(150) UNIQUE NOT NULL,\n`;
+    sql += `    escalafon VARCHAR(50),\n`;
+    sql += `    role VARCHAR(50) NOT NULL,\n`;
+    sql += `    office_id VARCHAR(50) NOT NULL,\n`;
+    sql += `    office_name VARCHAR(150),\n`;
+    sql += `    cargo TEXT,\n`;
+    sql += `    section_id VARCHAR(50),\n`;
+    sql += `    section_name VARCHAR(150),\n`;
+    sql += `    section_ids TEXT[],\n`;
+    sql += `    section_names TEXT[],\n`;
+    sql += `    technical_areas TEXT[],\n`;
+    sql += `    username VARCHAR(150) UNIQUE NOT NULL,\n`;
+    sql += `    password VARCHAR(255) NOT NULL,\n`;
+    sql += `    phone VARCHAR(50),\n`;
+    sql += `    badge_number VARCHAR(50),\n`;
+    sql += `    active BOOLEAN DEFAULT TRUE NOT NULL,\n`;
+    sql += `    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL\n`;
+    sql += `);\n\n`;
+
+    sql += `-- 3. Crear Índices de Alto Rendimiento en Supabase\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_usuarios_ci ON public.usuarios(ci);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_usuarios_email ON public.usuarios(email);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_usuarios_username ON public.usuarios(username);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_usuarios_role ON public.usuarios(role);\n`;
+    sql += `CREATE INDEX IF NOT EXISTS idx_usuarios_active ON public.usuarios(active);\n\n`;
+
+    sql += `-- 4. Inserción de Usuarios Registrados (UPSERT - ON CONFLICT)\n`;
+    sql += `INSERT INTO public.usuarios (\n`;
+    sql += `    id, grado, paternal_last_name, maternal_last_name, first_name, second_name, full_name, ci, gender, email, escalafon, role, office_id, office_name, cargo, section_id, section_name, section_ids, section_names, technical_areas, username, password, phone, badge_number, active, created_at\n`;
+    sql += `) VALUES\n`;
+
+    const valuesSql = users.map(u => {
+      return `(\n` +
+        `  ${escapeSql(u.id)},\n` +
+        `  ${escapeSql(u.grado)},\n` +
+        `  ${escapeSql(u.paternalLastName)},\n` +
+        `  ${escapeSql(u.maternalLastName)},\n` +
+        `  ${escapeSql(u.firstName)},\n` +
+        `  ${escapeSql(u.secondName)},\n` +
+        `  ${escapeSql(u.name)},\n` +
+        `  ${escapeSql(u.ci)},\n` +
+        `  ${escapeSql(u.gender)},\n` +
+        `  ${escapeSql(u.email)},\n` +
+        `  ${escapeSql(u.escalafon)},\n` +
+        `  ${escapeSql(u.role)},\n` +
+        `  ${escapeSql(u.officeId)},\n` +
+        `  ${escapeSql(u.officeName)},\n` +
+        `  ${escapeSql(u.cargo)},\n` +
+        `  ${escapeSql(u.sectionId)},\n` +
+        `  ${escapeSql(u.sectionName)},\n` +
+        `  ${escapeSqlArray(u.sectionIds)},\n` +
+        `  ${escapeSqlArray(u.sectionNames)},\n` +
+        `  ${escapeSqlArray(u.technicalAreas)},\n` +
+        `  ${escapeSql(u.username)},\n` +
+        `  ${escapeSql(u.password || u.ci || '123456')},\n` +
+        `  ${escapeSql(u.phone)},\n` +
+        `  ${escapeSql(u.badgeNumber)},\n` +
+        `  ${u.active !== false ? 'TRUE' : 'FALSE'},\n` +
+        `  ${escapeSql(u.createdAt || new Date().toISOString())}\n` +
+        `)`;
+    }).join(',\n');
+
+    sql += valuesSql + `\nON CONFLICT (id) DO UPDATE SET\n`;
+    sql += `    full_name = EXCLUDED.full_name,\n`;
+    sql += `    ci = EXCLUDED.ci,\n`;
+    sql += `    email = EXCLUDED.email,\n`;
+    sql += `    role = EXCLUDED.role,\n`;
+    sql += `    cargo = EXCLUDED.cargo,\n`;
+    sql += `    section_ids = EXCLUDED.section_ids,\n`;
+    sql += `    section_names = EXCLUDED.section_names,\n`;
+    sql += `    technical_areas = EXCLUDED.technical_areas,\n`;
+    sql += `    password = EXCLUDED.password,\n`;
+    sql += `    active = EXCLUDED.active;\n\n`;
+
+    sql += `-- Fin del Script de Migración Supabase\n`;
+    return sql;
+  }, [users]);
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(generatedSqlScript);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
+  };
+
+  const handleDownloadSql = () => {
+    const blob = new Blob([generatedSqlScript], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `script_usuarios_supabase_${new Date().toISOString().slice(0, 10)}.sql`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -294,13 +426,23 @@ export const UsuariosView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md text-xs flex items-center gap-2 cursor-pointer border border-emerald-600 shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Registrar Nuevo Usuario
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setShowSqlModal(true)}
+            className="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold px-3.5 py-2.5 rounded-xl shadow-md text-xs flex items-center gap-1.5 cursor-pointer border border-amber-400 transition-all"
+          >
+            <Database className="w-4 h-4 text-slate-950" />
+            Script SQL Supabase
+          </button>
+
+          <button
+            onClick={handleOpenAdd}
+            className="bg-emerald-800 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl shadow-md text-xs flex items-center gap-2 cursor-pointer border border-emerald-600 shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            Registrar Nuevo Usuario
+          </button>
+        </div>
       </div>
 
       {/* Search and Filters Bar */}
@@ -639,6 +781,83 @@ export const UsuariosView: React.FC = () => {
                 <button type="submit" className="px-5 py-2 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md"><CheckCircle2 className="w-4 h-4" /> Guardar Usuario</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Supabase SQL Script Generator Modal */}
+      {showSqlModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 max-w-4xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="bg-slate-950 text-white p-4 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-amber-400" />
+                <div>
+                  <h3 className="font-extrabold text-sm uppercase tracking-wider">
+                    Script SQL para Migración a Supabase (PostgreSQL)
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    Incluye definición de tabla, índices de rendimiento y migración de los {users.length} usuarios policiales activos.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowSqlModal(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Action Bar */}
+            <div className="p-3 bg-slate-100 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                <FileCode className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>Format: PostgreSQL / Supabase SQL Editor</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopySql}
+                  className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                    copiedSql
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-emerald-800 hover:bg-emerald-700 text-white'
+                  }`}
+                >
+                  {copiedSql ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copiedSql ? '¡Copiado al Portapapeles!' : 'Copiar Script SQL'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDownloadSql}
+                  className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all cursor-pointer shadow-sm border border-amber-400"
+                >
+                  <Download className="w-4 h-4 text-slate-950" />
+                  Descargar .sql
+                </button>
+              </div>
+            </div>
+
+            {/* Code Output */}
+            <div className="p-4 bg-slate-950 text-slate-100 overflow-y-auto font-mono text-xs leading-relaxed flex-1 select-all">
+              <pre className="whitespace-pre-wrap">{generatedSqlScript}</pre>
+            </div>
+
+            {/* Footer Notice */}
+            <div className="p-3 bg-slate-900 text-slate-400 text-[11px] border-t border-slate-800 flex items-center justify-between">
+              <span> Copia este script y ejecútalo en el <strong>SQL Editor</strong> del panel de tu proyecto en Supabase.</span>
+              <button
+                type="button"
+                onClick={() => setShowSqlModal(false)}
+                className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-lg cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
